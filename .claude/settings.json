@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "financial-analysis": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "financial_services"]
+    }
+  }
+}
