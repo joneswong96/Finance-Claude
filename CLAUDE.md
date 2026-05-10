@@ -31,6 +31,16 @@ Quick triggers for the standard workflows. Type these in Claude Code:
 
 - `memo` — Analyst memo format: TL;DR, key points, analysis, risks, recommendation. Set via `/output-style memo`.
 
+## MCP Servers
+
+Three MCP servers are configured in `.mcp.json` and auto-approved via `enableAllProjectMcpServers` in `.claude/settings.json`. See `.claude/mcp/` for full documentation.
+
+| Server | Package | Primary Users |
+|--------|---------|---------------|
+| `brave-search` | `@modelcontextprotocol/server-brave-search` | research-analyst, compliance-officer |
+| `sqlite` | `@modelcontextprotocol/server-sqlite` | data-engineer |
+| `fetch` | `@modelcontextprotocol/server-fetch` | data-engineer, quant-analyst, risk-manager |
+
 ## Standard Workflow Sequences
 
 **Full investment analysis:**
@@ -86,6 +96,12 @@ Finance-Claude/
     │   └── compliance-review.md
     ├── output-styles/
     │   └── memo.md
+    ├── mcp/                       # MCP server docs
+    │   ├── README.md
+    │   ├── brave-search.md
+    │   ├── fetch.md
+    │   ├── fred.md
+    │   └── sqlite.md
     └── hooks/
         └── block-large-data-files.sh
 ```
