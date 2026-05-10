@@ -33,9 +33,16 @@ Quick triggers for the standard workflows. Type these in Claude Code:
 
 ## Standard Workflow Sequences
 
-**Full investment analysis:**
+**Full investment analysis (with cross-debate):**
 ```
-orchestrator → data-engineer → [research-analyst + quant-analyst] → risk-manager → portfolio-manager → report-writer
+orchestrator spawns:
+  1. data-engineer                           → writes workspace/{ID}/01_data.md
+  2. research-analyst + quant-analyst        → write 03a + 03b (parallel, read 01)
+  3. research-analyst + quant-analyst        → write 04a + 04b rebuttals (parallel, read each other)
+  4. orchestrator                            → writes 04c synthesis
+  5. risk-manager                            → writes 05_risk.md (reads 04c)
+  6. portfolio-manager                       → writes 06_portfolio.md (reads 04c + 05)
+  7. report-writer                           → writes 07_memo.md (reads all)
 ```
 
 **New position onboarding:**
@@ -47,6 +54,16 @@ orchestrator → data-engineer → research-analyst → quant-analyst → risk-m
 ```
 orchestrator → data-engineer → [portfolio-manager + risk-manager] → report-writer → compliance-officer
 ```
+
+## Shared Workspace Protocol
+
+Every multi-agent analysis uses a shared workspace so agents communicate through files, not through the orchestrator:
+
+- **Path**: `workspace/{TICKER}_{YYYYMMDD}/`
+- **Each agent** reads its inputs from and writes its outputs to the workspace directory
+- **Naming convention**: `01_data.md`, `03a_research.md`, `03b_quant.md`, `04a_research_rebuttal.md`, `04b_quant_rebuttal.md`, `04c_synthesis.md`, `05_risk.md`, `06_portfolio.md`, `07_memo.md`
+- **Cross-debate**: after parallel analysis, each analyst reads the other's output and writes a rebuttal before the orchestrator synthesizes
+- Workspace files are gitignored (treated as ephemeral analysis output)
 
 ## Safety & Permissions
 
