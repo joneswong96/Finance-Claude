@@ -39,7 +39,7 @@ Every analysis uses a shared workspace directory so agents communicate through f
    - `03b_quant.md` — quant-analyst first-pass
    - `04a_research_rebuttal.md` — research reviews quant
    - `04b_quant_rebuttal.md` — quant reviews research
-   - `04c_synthesis.md` — reconciled view (you write this)
+   - `04c_synthesis.md` — reconciled view + scoring inputs (you write this)
    - `05_risk.md` — risk-manager assessment
    - `06_portfolio.md` — portfolio-manager decision
    - `07_memo.md` — report-writer final output
@@ -73,7 +73,32 @@ Agent(subagent_type="research-analyst", run_in_background=True, prompt="Read wor
 
 Agent(subagent_type="quant-analyst", run_in_background=True, prompt="Read workspace/{ID}/03a_research.md. Challenge or confirm the research analyst's thesis with quantitative evidence. Write your rebuttal to workspace/{ID}/04b_quant_rebuttal.md")
 ```
-Wait for both. Then read all four files (03a, 03b, 04a, 04b) and write a 1-page synthesis to `04c_synthesis.md` — note all agreements, flag all disagreements, and state your view on each conflict.
+Wait for both. Then read all four files (03a, 03b, 04a, 04b) and write `04c_synthesis.md` using this structure:
+
+```
+# Synthesis: {TICKER} — {DATE}
+
+## Agreements
+[bullet list of things both analysts agree on]
+
+## Disagreements & Orchestrator Position
+[for each: "Issue: X — Research says Y, Quant says Z — CIO position: W"]
+
+## Warning Flags
+[NAMED_FLAG_1, NAMED_FLAG_2, ...]
+Use standardized names: FDA_HOLD, CASH_CLIFF, PIPE_OVERHANG, NEG_EQUITY,
+DELIST_RISK, NO_REVENUE, RSI_HOT, BETA_HIGH, VOL_SHRINK, SHORT_SQUEEZE,
+INSIDER_SELL, DEBT_HEAVY, MARGIN_COMPRESS, CATALYST_MISS
+
+## Agent Verdicts (for report scoring)
+- research-analyst: {STRONG BUY / BUY / HOLD / SELL / STRONG SELL}
+- quant-analyst: EV={±X%}, Kelly={X%}, verdict={BUY/SELL}
+- research post-debate: {changed to X / confirmed Y}
+- quant post-debate: {changed to X / confirmed Y}
+
+## Consensus Thesis
+[2-3 sentences: the reconciled investment view going into risk + portfolio]
+```
 
 ### Step 5 — Risk Assessment
 Spawn `risk-manager` (foreground):
@@ -94,7 +119,9 @@ Agent(subagent_type="report-writer", prompt="Read all files in workspace/{ID}/. 
 ```
 
 ### Step 8 — Return
-Read `workspace/{ID}/07_memo.md` and return it as your final output. Also list any unresolved disagreements from the debate round that the user should know about.
+Read `workspace/{ID}/07_memo.md` and return it as your final output.
+
+The memo already contains the Agent Audit Trail and any unresolved disagreements — these are built into the report format. No separate summary needed.
 
 ---
 
