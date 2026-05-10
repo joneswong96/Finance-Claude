@@ -1,31 +1,35 @@
 # Finance-Claude: 8-Person Sub-Agent Team
 
-This project uses Claude Code's sub-agent system to simulate a professional finance team. Eight specialized agents collaborate under a master orchestrator to handle the full investment workflow.
+A Claude Code project that simulates a professional finance team. Eight specialized agents collaborate under a master orchestrator.
 
 ## The Team
 
-| Agent | Role | When to Use |
-|-------|------|-------------|
-| `orchestrator` | **Master brain** — decomposes tasks, delegates to specialists, synthesizes results | Start here for any complex or multi-step task |
-| `research-analyst` | Fundamental analysis, qualitative investment thesis, sector research | Company/sector deep dives, earnings analysis, macro research |
-| `quant-analyst` | Backtesting, factor models, statistical analysis, systematic signals | Any math/stats/code-driven analysis or strategy research |
-| `portfolio-manager` | Portfolio construction, asset allocation, trade decisions | Rebalancing, performance review, new position sizing |
-| `risk-manager` | VaR, stress testing, market/credit/liquidity risk, risk limits | Pre-trade risk checks, scenario analysis, limit monitoring |
-| `compliance-officer` | KYC/AML, regulatory filings, suitability, audit trails | Any client-facing or regulatory output requiring sign-off |
-| `data-engineer` | Data pipelines, ETL, database queries, data quality | Fetching/processing market data, building data models |
-| `report-writer` | Research reports, performance summaries, investor memos | Any polished written output for internal or external use |
+| Agent | Role |
+|-------|------|
+| `orchestrator` | **Master brain** — decomposes tasks, delegates, synthesizes |
+| `research-analyst` | Fundamental & qualitative investment analysis |
+| `quant-analyst` | Backtesting, factor models, statistical analysis |
+| `portfolio-manager` | Allocation, trade decisions, rebalancing |
+| `risk-manager` | VaR, stress tests, market/credit/liquidity risk |
+| `compliance-officer` | KYC/AML, regulatory filings, sign-off |
+| `data-engineer` | Data pipelines, ETL, market data |
+| `report-writer` | Polished written output |
 
-## How to Use
+## Slash Commands
 
-For simple single-domain tasks, Claude Code picks the right agent automatically from each agent's `description` field.
+Quick triggers for the standard workflows. Type these in Claude Code:
 
-For complex multi-step tasks, always start with the **orchestrator**:
+| Command | What It Does |
+|---------|--------------|
+| `/analyze TSLA` | Full investment analysis on a ticker |
+| `/backtest <strategy>` | Quant backtest with full performance & risk metrics |
+| `/risk-check AAPL 1000 buy` | Pre-trade risk review |
+| `/quarterly-report Q1 2026` | Quarterly investor report (full team) |
+| `/compliance-review <doc>` | Compliance sign-off on a document |
 
-```
-"Orchestrate a full investment analysis on TSLA and give me a trade recommendation"
-"Orchestrate a quarterly investor report for our equity fund"
-"Use the quant-analyst to backtest a momentum strategy on S&P 500 stocks"
-```
+## Output Styles
+
+- `memo` — Analyst memo format: TL;DR, key points, analysis, risks, recommendation. Set via `/output-style memo`.
 
 ## Standard Workflow Sequences
 
@@ -44,13 +48,44 @@ orchestrator → data-engineer → research-analyst → quant-analyst → risk-m
 orchestrator → data-engineer → [portfolio-manager + risk-manager] → report-writer → compliance-officer
 ```
 
-**Regulatory filing:**
+## Safety & Permissions
+
+- `.claude/settings.json` — pre-approves common Python/git/data commands; denies destructive ones (`rm -rf`, `git push --force`, secret reads)
+- `.claude/hooks/block-large-data-files.sh` — blocks writing large data files (>50MB) and known-secret patterns
+- `.gitignore` — excludes `.env`, `*.local.*`, `data/`, `*.csv`, `*.parquet`, etc.
+
+## Local Setup
+
+1. Copy `CLAUDE.local.md.example` → `CLAUDE.local.md` (gitignored) and fill in your machine-local context
+2. Put real API keys in `.env` (also gitignored), never in CLAUDE files
+3. Sub-agents will pick up both `CLAUDE.md` (team rules) and `CLAUDE.local.md` (your overrides)
+
+## Project Structure
+
 ```
-orchestrator → data-engineer → compliance-officer → report-writer
+Finance-Claude/
+├── CLAUDE.md                      # this file: team rules, shared context
+├── CLAUDE.local.md.example        # template for personal overrides
+├── .gitignore                     # blocks secrets and data files
+└── .claude/
+    ├── settings.json              # permissions + hook registry
+    ├── agents/                    # 8 sub-agents
+    │   ├── orchestrator.md
+    │   ├── research-analyst.md
+    │   ├── quant-analyst.md
+    │   ├── portfolio-manager.md
+    │   ├── risk-manager.md
+    │   ├── compliance-officer.md
+    │   ├── data-engineer.md
+    │   └── report-writer.md
+    ├── commands/                  # slash commands
+    │   ├── analyze.md
+    │   ├── backtest.md
+    │   ├── risk-check.md
+    │   ├── quarterly-report.md
+    │   └── compliance-review.md
+    ├── output-styles/
+    │   └── memo.md
+    └── hooks/
+        └── block-large-data-files.sh
 ```
-
-## Agent Files
-
-All agent definitions live in `.claude/agents/`. Each file defines the agent's persona, responsibilities, and decision framework.
-
-The `orchestrator` agent contains the full delegation and sequencing logic, including when to run agents in parallel vs. series.

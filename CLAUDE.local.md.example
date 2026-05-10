@@ -1,0 +1,22 @@
+# Personal / Machine-Local Overrides (DO NOT COMMIT)
+
+Copy this file to `CLAUDE.local.md` and fill in your local context. The `.local.md` version is gitignored.
+
+## API Key References
+
+API keys themselves live in environment variables (`.env`), never in this file. This file only documents WHICH keys are available.
+
+- `TIINGO_API_KEY` — market data
+- `FRED_API_KEY` — economic indicators
+- `OPENAI_API_KEY` — embeddings for research notes (optional)
+
+## Personal Preferences
+
+- Preferred backtest universe: <e.g. S&P 500, Russell 1000>
+- Default risk profile: <e.g. moderate, 15% vol target>
+- Favorite chart library: <plotly, matplotlib, etc.>
+
+## Local Data Paths
+
+- Market data lake: `~/data/market/`
+- Backtest results cache: `~/data/backtests/`

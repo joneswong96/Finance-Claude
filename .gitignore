@@ -1,0 +1,36 @@
+# Secrets & local config
+.env
+.env.*
+*.local.*
+!*.local.*.example
+CLAUDE.local.md
+.claude/settings.local.json
+**/credentials*
+**/*secret*
+**/*api_key*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Data files (use cloud storage / data lake instead)
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# Notebooks output (commit clean notebooks only)
+*-checkpoint.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
