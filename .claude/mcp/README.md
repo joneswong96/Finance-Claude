@@ -14,6 +14,7 @@ This folder documents the Model Context Protocol (MCP) servers configured for th
 | `firecrawl` | `firecrawl-mcp` | Clean content extraction and bulk site crawling | research-analyst, data-engineer, compliance-officer |
 | `glif` | `glif-mcp-server` | AI workflow pipelines: chart generation, visuals | report-writer, research-analyst |
 | `chrome` | `@modelcontextprotocol/server-puppeteer` | Headless Chrome: screenshots, PDF, JS scraping | data-engineer, research-analyst, compliance-officer |
+| `polymarket` | GitHub: caiovicentino/polymarket-mcp-server | Crowd-implied event probabilities from prediction markets | research-analyst, risk-manager, quant-analyst |
 
 ## Quick Setup
 
@@ -33,9 +34,11 @@ This folder documents the Model Context Protocol (MCP) servers configured for th
    GLIF_API_TOKEN=...
    FRED_API_KEY=...
    TIINGO_API_KEY=...
+   POLYMARKET_PYTHON=~/tools/polymarket-mcp-server/venv/bin/python
    DB_PATH=./data/finance.db   # optional, defaults to ./data/finance.db
    ```
    Playwright, Fetch, and Chrome require no API keys.
+   Polymarket requires a local clone + install (see [polymarket.md](./polymarket.md)) but no API key for read-only mode.
 
 ## Server Documentation
 
@@ -48,3 +51,4 @@ This folder documents the Model Context Protocol (MCP) servers configured for th
 - [firecrawl.md](./firecrawl.md) — Firecrawl web extraction
 - [glif.md](./glif.md) — Glif AI workflow pipelines
 - [chrome.md](./chrome.md) — Chrome/Puppeteer headless browser
+- [polymarket.md](./polymarket.md) — Polymarket crowd-implied event probabilities

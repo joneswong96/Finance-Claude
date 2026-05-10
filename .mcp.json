@@ -68,6 +68,15 @@
         "-y",
         "@modelcontextprotocol/server-puppeteer"
       ]
+    },
+    "polymarket": {
+      "command": "${POLYMARKET_PYTHON:-python3}",
+      "args": ["-m", "polymarket_mcp"],
+      "env": {
+        "DEMO_MODE": "true",
+        "POLYGON_PRIVATE_KEY": "${POLYGON_PRIVATE_KEY}",
+        "POLYGON_ADDRESS": "${POLYGON_ADDRESS}"
+      }
     }
   }
 }

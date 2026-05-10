@@ -33,7 +33,7 @@ Quick triggers for the standard workflows. Type these in Claude Code:
 
 ## MCP Servers
 
-Eight MCP servers are configured in `.mcp.json` and auto-approved via `enableAllProjectMcpServers` in `.claude/settings.json`. See `.claude/mcp/` for full documentation.
+Nine MCP servers are configured in `.mcp.json` and auto-approved via `enableAllProjectMcpServers` in `.claude/settings.json`. See `.claude/mcp/` for full documentation.
 
 | Server | Package | Primary Users |
 |--------|---------|---------------|
@@ -45,6 +45,7 @@ Eight MCP servers are configured in `.mcp.json` and auto-approved via `enableAll
 | `firecrawl` | `firecrawl-mcp` | research-analyst, data-engineer, compliance-officer |
 | `glif` | `glif-mcp-server` | report-writer, research-analyst |
 | `chrome` | `@modelcontextprotocol/server-puppeteer` | data-engineer, research-analyst, compliance-officer |
+| `polymarket` | GitHub: caiovicentino/polymarket-mcp-server | research-analyst, risk-manager, quant-analyst |
 
 ## Standard Workflow Sequences
 
@@ -111,7 +112,8 @@ Finance-Claude/
     │   ├── playwright.md
     │   ├── firecrawl.md
     │   ├── glif.md
-    │   └── chrome.md
+    │   ├── chrome.md
+    │   └── polymarket.md
     └── hooks/
         └── block-large-data-files.sh
 ```
