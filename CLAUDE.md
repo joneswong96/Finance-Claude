@@ -33,13 +33,18 @@ Quick triggers for the standard workflows. Type these in Claude Code:
 
 ## MCP Servers
 
-Three MCP servers are configured in `.mcp.json` and auto-approved via `enableAllProjectMcpServers` in `.claude/settings.json`. See `.claude/mcp/` for full documentation.
+Eight MCP servers are configured in `.mcp.json` and auto-approved via `enableAllProjectMcpServers` in `.claude/settings.json`. See `.claude/mcp/` for full documentation.
 
 | Server | Package | Primary Users |
 |--------|---------|---------------|
 | `brave-search` | `@modelcontextprotocol/server-brave-search` | research-analyst, compliance-officer |
 | `sqlite` | `@modelcontextprotocol/server-sqlite` | data-engineer |
 | `fetch` | `@modelcontextprotocol/server-fetch` | data-engineer, quant-analyst, risk-manager |
+| `perplexity` | `@perplexityai/mcp-server` | research-analyst, quant-analyst, orchestrator |
+| `playwright` | `@playwright/mcp` | research-analyst, data-engineer, compliance-officer |
+| `firecrawl` | `firecrawl-mcp` | research-analyst, data-engineer, compliance-officer |
+| `glif` | `glif-mcp-server` | report-writer, research-analyst |
+| `chrome` | `@modelcontextprotocol/server-puppeteer` | data-engineer, research-analyst, compliance-officer |
 
 ## Standard Workflow Sequences
 
@@ -101,7 +106,12 @@ Finance-Claude/
     │   ├── brave-search.md
     │   ├── fetch.md
     │   ├── fred.md
-    │   └── sqlite.md
+    │   ├── sqlite.md
+    │   ├── perplexity.md
+    │   ├── playwright.md
+    │   ├── firecrawl.md
+    │   ├── glif.md
+    │   └── chrome.md
     └── hooks/
         └── block-large-data-files.sh
 ```
