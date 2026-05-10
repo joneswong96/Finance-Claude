@@ -4,16 +4,30 @@ A Claude Code project that simulates a professional finance team. Eight speciali
 
 ## The Team
 
+Agents are split into two tiers. **Tool agents** gather information and output structured briefs. **Actioner agents** consume those briefs and make decisions. Actioners never re-gather information a tool agent already produced.
+
+### Meta
 | Agent | Role |
 |-------|------|
-| `orchestrator` | **Master brain** — decomposes tasks, delegates, synthesizes |
-| `research-analyst` | Fundamental & qualitative investment analysis |
-| `quant-analyst` | Backtesting, factor models, statistical analysis |
+| `orchestrator` | **Master brain** — gates research, delegates, broadcasts briefs, synthesizes |
+
+### Tool Agents — information gatherers
+| Agent | Output Brief |
+|-------|-------------|
+| `data-engineer` | Data Package: cleaned, validated datasets |
+| `research-analyst` | Research Brief: qualitative thesis, fundamentals, why-triggers |
+| `quant-analyst` | Quant Brief: signals, backtest results, statistical anomalies |
+
+### Actioner Agents — decision makers
+| Agent | Role |
+|-------|------|
 | `portfolio-manager` | Allocation, trade decisions, rebalancing |
-| `risk-manager` | VaR, stress tests, market/credit/liquidity risk |
+| `risk-manager` | VaR, stress tests, limit approvals |
 | `compliance-officer` | KYC/AML, regulatory filings, sign-off |
-| `data-engineer` | Data pipelines, ETL, market data |
 | `report-writer` | Polished written output |
+
+### Research Gate
+Before commissioning any tool agent, the orchestrator scores the request on **materiality × novelty**. Low on both → skip research, use cached knowledge. High on either → proceed. The research-analyst applies a further depth gate internally: Shallow Scan → Standard Analysis → Deep Dive (triggered only by specific anomaly signals called "Why Triggers").
 
 ## Slash Commands
 
