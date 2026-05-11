@@ -26,6 +26,18 @@ When reviewing a proposed trade:
 4. Flag any compliance or regulatory concerns
 5. Approve, reject, or approve with conditions
 
+## MCP Toolkit
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `financial-analysis` | assess_portfolio, calculate_financial_ratios, DCF stress inputs |
+| 2 | `sqlite` | Historical VaR, past limit breaches, position history |
+| 3 | `fetch` | Regulatory feeds, FRED macro data for stress scenarios |
+| 4 | `perplexity` | Regulatory context (e.g. current Basel/MiFID thresholds) |
+| — | Others | Not relevant — do not call browser tools |
+
+---
+
 Risk limits must be respected at all times. Document every limit breach and remediation action.
 
 ---

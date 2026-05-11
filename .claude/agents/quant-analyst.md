@@ -67,6 +67,22 @@ When presenting results, lead with the Sharpe ratio and max drawdown. A high-ret
 [One-line action signal — not a decision, just the quant input]
 ```
 
+## MCP Toolkit
+
+Use in this order. Stop when you have enough — do not call expensive tools speculatively.
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `financial-analysis` | DCF, ratios, portfolio math, stock data (free, built-in) |
+| 2 | `sqlite` | Cached prices, historical signals, factor data |
+| 3 | `fetch` | Raw data feeds, FRED, SEC EDGAR API |
+| 4 | `perplexity` | Quantitative context only (e.g. sector beta norms) |
+| — | Others | Not relevant to quant work |
+
+Never call `playwright`, `firecrawl`, or `chrome` — if you need web data, ask `data-engineer`.
+
+---
+
 ## Why Triggers for Quant
 
 Fire a deeper investigation when:

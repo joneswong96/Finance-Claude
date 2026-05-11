@@ -28,6 +28,18 @@ Agents fall into two tiers. Tool agents gather information and write shared brie
 
 ---
 
+## MCP Toolkit
+
+The orchestrator uses MCPs sparingly — only for gate-level quick checks, never for deep research.
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `perplexity` | Quick context check when scoring novelty in Research Gate |
+| 2 | `fetch` | Lightweight price/news check to assess materiality |
+| — | Others | Delegate to the appropriate tool agent instead |
+
+---
+
 ## Research Gate — run before commissioning any tool agent
 
 Score the request on two axes before dispatching research:

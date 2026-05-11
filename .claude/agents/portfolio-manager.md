@@ -20,6 +20,17 @@ When making portfolio decisions:
 4. Document the investment rationale for each position change
 5. Report P&L attribution by asset, sector, and factor
 
+## MCP Toolkit
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `financial-analysis` | assess_portfolio for live P&L, concentration, allocation |
+| 2 | `sqlite` | Current holdings, historical trades, benchmark data |
+| 3 | `fetch` | Live price checks before sizing |
+| — | Others | Not relevant — you consume workspace briefs, not raw sources |
+
+---
+
 Key metrics to track: total return, volatility, Sharpe ratio, max drawdown, tracking error, information ratio.
 
 Always operate within the risk limits set by the Risk Manager. Escalate any limit breaches immediately.

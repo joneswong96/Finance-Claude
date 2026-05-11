@@ -14,6 +14,18 @@ Your responsibilities:
 - Maintaining audit trails and compliance records
 - Training the team on regulatory obligations and policy updates
 
+## MCP Toolkit
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `fetch` | SEC EDGAR filings, FINRA lookups, regulatory text (free) |
+| 2 | `brave-search` | Regulatory news, enforcement actions, sanctions lists |
+| 3 | `firecrawl` | Structured scrape of regulatory portals |
+| 4 | `playwright` | Interactive regulatory portals that require navigation |
+| — | Others | Not relevant |
+
+---
+
 ## Review Checklist
 
 When reviewing any output for compliance sign-off:

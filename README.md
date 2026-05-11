@@ -1,234 +1,229 @@
-# Financial Services MCP Plugin for Claude Code
+# Finance-Claude
 
-A production-quality [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that adds financial analysis capabilities to Claude Code. Built with the `mcp` Python library and `yfinance` for live market data.
+A Claude Code project that fields a **10-person autonomous finance team** connected to live TradingView charts. Agents collaborate through a shared workspace, debate each other's findings, and produce structured investment memos with entry plans, warning flags, and a full audit trail.
 
-## Features
+---
 
-| Tool | Description |
-|------|-------------|
-| `analyze_stock` | Live stock analysis: P/E, EPS, 52-week range, market cap, analyst consensus, valuation commentary |
-| `calculate_dcf` | Discounted Cash Flow valuation with terminal value and per-share intrinsic value |
-| `assess_portfolio` | Portfolio value, allocation %, unrealised P&L, concentration risk assessment |
-| `calculate_financial_ratios` | Full ratio suite: liquidity, leverage, profitability, efficiency, valuation, DuPont |
-| `generate_financial_report` | Structured company report with strengths, concerns, and overall assessment |
-| `convert_currency` | Currency conversion across 19 currencies (USD, EUR, GBP, JPY, CAD, AUD, CHF, and more) |
-| `compound_interest` | Future value calculator with periodic contributions and year-by-year breakdown |
-| `loan_amortization` | Monthly payment, full amortization schedule, and extra-payment savings analysis |
+## The Team
 
-## Quick Start
+| Tier | Agent | Role |
+|------|-------|------|
+| Meta | `orchestrator` | Master brain — gates research, spawns agents, synthesizes |
+| Tool | `data-engineer` | Fetches and packages all raw financial data |
+| Tool | `research-analyst` | Qualitative thesis, fundamentals, why-triggers |
+| Tool | `quant-analyst` | Factor models, backtests, statistical signals |
+| Tool | `chart-analyst` | Supply/demand zones via TradingView MCP (scored 0–100) |
+| Actioner | `signal-tracker` | Watches zones for entry confirmation, fires ENTRY_SIGNAL |
+| Actioner | `risk-manager` | VaR, stress tests, stop levels, position limits |
+| Actioner | `portfolio-manager` | Allocation decision, conviction score, trade plan |
+| Actioner | `compliance-officer` | Regulatory sign-off on all client-facing output |
+| Actioner | `report-writer` | Bilingual investment memo with score card and audit trail |
+
+**Tool agents** write shared briefs. **Actioner agents** consume those briefs and decide. Actioners never re-gather data.
+
+---
+
+## Slash Commands
+
+```
+/analyze TSLA              Full investment analysis (fundamental team)
+/scan XAUUSD               Scan TradingView for supply/demand zones
+/watch XAUUSD LONG 2048.5  Monitor a zone — fires ENTRY_SIGNAL on confirmation
+/backtest <strategy>       Quantitative backtest with full performance metrics
+/risk-check AAPL 1000 buy  Pre-trade risk review
+/quarterly-report Q1 2026  Full quarterly investor report
+/compliance-review <doc>   Compliance sign-off on any document
+```
+
+---
+
+## MCP Servers (11)
+
+| Server | What it provides |
+|--------|-----------------|
+| `tradingview` | Live chart access via TradingView Desktop CDP |
+| `financial-analysis` | Built-in Python tools: DCF, ratios, portfolio math, FX |
+| `brave-search` | Web search |
+| `sqlite` | Local financial database |
+| `fetch` | Lightweight HTTP (SEC, FRED, APIs) |
+| `perplexity` | Research synthesis |
+| `playwright` | Browser automation |
+| `firecrawl` | Structured web scraping |
+| `glif` | Image/chart generation for reports |
+| `chrome` | Puppeteer for JS-heavy pages |
+| `polymarket` | Crowd-implied event probabilities (read-only) |
+
+**Token cost order (cheapest first):** `sqlite` → `fetch` → `financial-analysis` → `brave-search` → `perplexity` → `playwright` → `firecrawl` → `chrome` → `glif` → `polymarket` → `tradingview`
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.11+
 - [Claude Code](https://claude.ai/code) installed
+- Node.js 18+ (for MCP servers via npx)
+- Python 3.11+ (for `financial-analysis` plugin)
+- TradingView Desktop (for chart analysis — Windows only)
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/joneswong96/Finance-Claude.git
 cd Finance-Claude
 
-# Install with pip (editable mode recommended for development)
+# Install the financial-analysis Python plugin
 pip install -e ".[dev]"
-
-# Or install normally
-pip install .
 ```
 
-### Running the server manually
+### API Keys
+
+Copy `.env.example` to `.env` and fill in your keys:
+
+```env
+BRAVE_API_KEY=...
+PERPLEXITY_API_KEY=...
+FIRECRAWL_API_KEY=...
+GLIF_API_TOKEN=...
+```
+
+`sqlite`, `fetch`, `playwright`, and `chrome` require no API keys.
+`polymarket` runs in read-only `DEMO_MODE=true` by default.
+
+### Local overrides
 
 ```bash
-# Via module
-python -m financial_services
-
-# Via installed entry point
-financial-services-mcp
+cp CLAUDE.local.md.example CLAUDE.local.md
+# Fill in machine-specific context (your positions, watchlist, etc.)
 ```
-
-### Automatic registration with Claude Code
-
-The `.claude/settings.json` file is already configured to register this plugin:
-
-```json
-{
-  "mcpServers": {
-    "financial-analysis": {
-      "type": "stdio",
-      "command": "python",
-      "args": ["-m", "financial_services"]
-    }
-  }
-}
-```
-
-Claude Code will pick this up automatically when you open the project directory.
-
-## Tool Reference
-
-### `analyze_stock`
-
-Fetches live data from Yahoo Finance.
-
-```
-analyze_stock(ticker: str) -> dict
-```
-
-**Example:** `analyze_stock("AAPL")`
-
-Returns: company info, price data (current, 52-week range, volume), valuation metrics (P/E, PEG, EV/EBITDA), financials (margins, ROE, ROA), analyst targets, and valuation commentary.
 
 ---
 
-### `calculate_dcf`
+## TradingView MCP Setup
 
-```
-calculate_dcf(
-    cash_flows: list[float],      # e.g. [100, 110, 121, 133, 146]
-    discount_rate: float,          # e.g. 0.10 (10% WACC)
-    terminal_growth_rate: float,   # e.g. 0.025 (2.5%)
-    growth_rate: float = 0.0,      # auto-expand single FCF at this rate
-    shares_outstanding: float | None = None,
-    net_debt: float = 0.0,
-) -> dict
+TradingView Desktop must be running with **Chrome DevTools Protocol (CDP)** enabled before chart analysis will work.
+
+### Windows (recommended)
+
+```bat
+scripts\launch_tv_debug.bat
 ```
 
-Returns: PV of each FCF period, terminal value, enterprise value, equity value, and optional intrinsic value per share.
+This script launches TradingView Desktop with CDP on port 9222 and verifies the MCP server can connect.
+
+### Manual launch
+
+```bat
+"C:\Users\%USERNAME%\AppData\Local\Programs\TradingView\TradingView.exe" --remote-debugging-port=9222
+```
+
+Then start Claude Code — the `tradingview` MCP server connects automatically via `.mcp.json`.
+
+### Verify connection
+
+Once Claude Code is open, run:
+```
+/scan XAUUSD
+```
+If chart-analyst returns zone data, TradingView MCP is working.
 
 ---
 
-### `assess_portfolio`
+## How Analyses Work
+
+### Fundamental analysis (`/analyze`)
 
 ```
-assess_portfolio(
-    holdings: list[dict],   # [{"ticker": "AAPL", "shares": 10, "avg_cost": 150.0}, ...]
-    risk_free_rate: float = 0.05,
-    fetch_live_prices: bool = True,
-) -> dict
+[Research Gate] → data-engineer (01_data.md)
+              → research-analyst + quant-analyst in parallel (03a + 03b)
+              → cross-debate rebuttals (04a + 04b)
+              → orchestrator synthesis (04c) with named warning flags
+              → risk-manager (05_risk.md)
+              → portfolio-manager (06_portfolio.md)
+              → report-writer (07_memo.md) ← final output
 ```
 
-Each holding optionally accepts `current_price` to override live lookup.
+### Technical analysis (`/scan` + `/watch`)
 
-Returns: total market value, cost basis, unrealised P&L, per-holding allocation %, concentration HHI, risk level (LOW-MODERATE / MODERATE / ELEVATED / HIGH).
+```
+chart-analyst → zones scored 0-100
+signal-tracker → waits for confirmation inside zone → ENTRY_SIGNAL
+risk-manager → approves SL/size
+portfolio-manager → executes
+```
+
+All analysis files land in `workspace/{TICKER}_{YYYYMMDD}/` and are gitignored.
+
+### Research Gate
+
+Before any research is commissioned, the orchestrator scores the request:
+- **High materiality OR high novelty** → proceed
+- **Low on both** → skip, use cached knowledge, flag assumption
+
+Inside research, the analyst runs: **Shallow Scan** (default) → **Standard Analysis** → **Deep Dive** (triggered by Why Triggers: >2σ deviation, conflicting signals, crowd divergence >15pp).
 
 ---
 
-### `calculate_financial_ratios`
+## Output Format
 
-Accepts any combination of income statement and balance sheet line items:
-
-```
-calculate_financial_ratios(
-    revenue, gross_profit, operating_income, ebitda, net_income,
-    interest_expense, depreciation_amortization,
-    total_assets, current_assets, cash_and_equivalents, inventory,
-    accounts_receivable, total_liabilities, current_liabilities,
-    total_debt, shareholders_equity,
-    operating_cash_flow, capital_expenditures,
-    market_cap, share_price, shares_outstanding, earnings_per_share,
-) -> dict
-```
-
-Returns categorised ratios: liquidity, leverage, profitability, efficiency, valuation, DuPont.
+The final memo includes:
+- **Score card** — 0-100 composite score, grade, market regime, win-rate probability, named warning flags
+- **Trade plan** — batched entry prices + amounts (BUY) or liquidation schedule (SELL), stop-loss, two-stage take-profit
+- **Investment thesis** — bull/base/bear scenarios with probabilities and targets
+- **Agent audit trail** — every agent's key finding and verdict in one table
+- **Unresolved disagreements** — never silently resolved
 
 ---
-
-### `generate_financial_report`
-
-```
-generate_financial_report(
-    company_name: str,
-    ticker: str | None = None,
-    revenue, net_income, total_assets, total_liabilities,
-    shareholders_equity, current_assets, current_liabilities,
-    ebitda, free_cash_flow, revenue_growth_rate,
-    industry, fiscal_year,
-) -> dict
-```
-
-Returns a structured report with key ratios, financial summary, strengths, highlights, concerns, and an overall assessment (Strong / Positive / Neutral / Cautious / Weak).
-
----
-
-### `convert_currency`
-
-```
-convert_currency(
-    amount: float,
-    from_currency: str,   # e.g. "USD"
-    to_currency: str,     # e.g. "EUR"
-    show_all_rates: bool = False,
-) -> dict
-```
-
-Supported: USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, INR, MXN, SGD, HKD, NZD, SEK, NOK, DKK, ZAR, BRL, KRW.
-
-> **Note:** Rates are static reference values for demonstration. Use a live FX feed in production.
-
----
-
-### `compound_interest`
-
-```
-compound_interest(
-    principal: float,
-    annual_rate: float,         # e.g. 0.07 (7%)
-    years: float,
-    compounds_per_year: int = 12,
-    additional_contribution: float = 0.0,
-    contribution_timing: str = "end",  # or "beginning"
-) -> dict
-```
-
-Returns: future value, total contributions, total interest earned, effective annual rate, year-by-year growth table.
-
----
-
-### `loan_amortization`
-
-```
-loan_amortization(
-    principal: float,
-    annual_rate: float,           # e.g. 0.065 (6.5%)
-    term_months: int,             # e.g. 360 for 30 years
-    extra_monthly_payment: float = 0.0,
-    origination_fee: float = 0.0,
-) -> dict
-```
-
-Returns: monthly payment, total interest, APR estimate, actual payoff timeline, full month-by-month schedule, and extra-payment interest savings.
 
 ## Project Structure
 
 ```
 Finance-Claude/
-├── pyproject.toml
 ├── README.md
-├── .claude/
-│   └── settings.json          # MCP server registration for Claude Code
-└── src/
-    └── financial_services/
-        ├── __init__.py
-        ├── __main__.py        # Enables: python -m financial_services
-        ├── server.py          # FastMCP server with all tool registrations
-        └── tools/
-            ├── __init__.py
-            ├── stock.py       # analyze_stock, generate_financial_report
-            ├── valuation.py   # calculate_dcf, calculate_financial_ratios
-            ├── portfolio.py   # assess_portfolio
-            └── calculators.py # compound_interest, loan_amortization, convert_currency
+├── CLAUDE.md                        # Team rules (loaded by all agents)
+├── CLAUDE.local.md.example          # Template for personal overrides
+├── .mcp.json                        # 11 MCP server definitions
+├── .gitignore
+├── pyproject.toml
+│
+├── scripts/
+│   ├── launch_tv_debug.bat          # Windows: launch TradingView with CDP
+│   └── launch_tv_debug.sh           # Mac/Linux equivalent
+│
+├── src/financial_services/          # Built-in Python MCP plugin
+│   ├── server.py
+│   └── tools/
+│       ├── stock.py                 # analyze_stock, generate_financial_report
+│       ├── valuation.py             # calculate_dcf, calculate_financial_ratios
+│       ├── portfolio.py             # assess_portfolio
+│       └── calculators.py           # compound_interest, loan_amortization, FX
+│
+├── workspace/                       # Ephemeral analysis output (gitignored)
+│   └── .gitkeep
+│
+└── .claude/
+    ├── settings.json                # Permissions + hooks
+    ├── agents/                      # 10 sub-agent definitions
+    ├── commands/                    # 7 slash command definitions
+    ├── mcp/                         # MCP server documentation
+    ├── skills/
+    │   └── zone-analysis.md         # Shared zone scoring framework
+    ├── output-styles/
+    │   └── memo.md
+    └── hooks/
+        └── block-large-data-files.sh
 ```
 
-## Dependencies
+---
 
-| Package | Purpose |
-|---------|---------|
-| `mcp[cli]>=1.0.0` | MCP server framework |
-| `yfinance>=0.2.40` | Live stock data from Yahoo Finance |
-| `pydantic>=2.0.0` | Data validation |
+## Safety
+
+- **Permissions** — `.claude/settings.json` pre-approves safe commands; blocks `rm -rf`, force push, secret reads
+- **Hook** — `.claude/hooks/block-large-data-files.sh` blocks files >50MB and known secret patterns
+- **Gitignore** — excludes `.env`, credentials, data files, workspace output
+
+---
 
 ## Disclaimer
 
-This plugin is for educational and analytical purposes only. The financial analysis tools do not constitute investment advice. Stock prices, analyst ratings, and financial data fetched via yfinance are subject to change. Always consult a qualified financial advisor before making investment decisions.
-
-Currency conversion rates are static and for demonstration only — not suitable for real financial transactions.
+For educational and analytical purposes only. Nothing here constitutes investment advice. Always consult a qualified financial advisor. Live data from Yahoo Finance and other sources may be delayed or inaccurate. Currency rates in the financial-analysis plugin are static reference values.
