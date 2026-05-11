@@ -3,6 +3,11 @@
     "tradingview": {
       "command": "node",
       "args": ["C:/Users/jones.wong/tradingview-mcp/src/server.js"]
+    },
+    "financial-analysis": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "financial_services"]
     }
   }
 }
