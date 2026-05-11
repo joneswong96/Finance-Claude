@@ -37,23 +37,20 @@ A Claude Code project that fields a **10-person autonomous finance team** connec
 
 ---
 
-## MCP Servers (11)
+## MCP Servers (6)
+
+Six servers, each with a non-overlapping purpose. No redundancy.
 
 | Server | What it provides |
 |--------|-----------------|
-| `tradingview` | Live chart access via TradingView Desktop CDP |
-| `financial-analysis` | Built-in Python tools: DCF, ratios, portfolio math, FX |
-| `brave-search` | Web search |
-| `sqlite` | Local financial database |
-| `fetch` | Lightweight HTTP (SEC, FRED, APIs) |
-| `perplexity` | Research synthesis |
-| `playwright` | Browser automation |
-| `firecrawl` | Structured web scraping |
-| `glif` | Image/chart generation for reports |
-| `chrome` | Puppeteer for JS-heavy pages |
-| `polymarket` | Crowd-implied event probabilities (read-only) |
+| `tradingview` | Live chart access via TradingView Desktop CDP — candles, indicators, zones |
+| `financial-analysis` | Built-in Python tools: DCF, ratios, portfolio P&L, stock data, FX |
+| `sqlite` | Local financial database — cached data, signal logs, trade history |
+| `fetch` | Lightweight HTTP: SEC EDGAR, FRED, direct API calls |
+| `playwright` | Browser automation for JS-heavy research pages and regulatory portals |
+| `polymarket` | Crowd-implied event probabilities (read-only, no trading) |
 
-**Token cost order (cheapest first):** `sqlite` → `fetch` → `financial-analysis` → `brave-search` → `perplexity` → `playwright` → `firecrawl` → `chrome` → `glif` → `polymarket` → `tradingview`
+**Guiding principle:** Use the best source for the job, then stop. `tradingview` is the only source for chart data. `financial-analysis` is the first call for any calculation. `fetch` covers most data APIs without launching a browser. `playwright` only when a page requires JavaScript execution.
 
 ---
 

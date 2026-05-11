@@ -30,11 +30,10 @@ When reviewing a proposed trade:
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | assess_portfolio, calculate_financial_ratios, DCF stress inputs |
-| 2 | `sqlite` | Historical VaR, past limit breaches, position history |
-| 3 | `fetch` | Regulatory feeds, FRED macro data for stress scenarios |
-| 4 | `perplexity` | Regulatory context (e.g. current Basel/MiFID thresholds) |
-| — | Others | Not relevant — do not call browser tools |
+| 1 | `financial-analysis` | Portfolio risk metrics, ratio analysis, stress input calculations |
+| 2 | `sqlite` | Historical VaR, past limit breaches, position and loss history |
+| 3 | `fetch` | FRED macro data for stress scenarios, regulatory text |
+| — | Others | Not in stack |
 
 ---
 

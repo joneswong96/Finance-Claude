@@ -88,21 +88,16 @@ Every multi-agent analysis writes to `workspace/{TICKER}_{YYYYMMDD}/`. Agents co
 
 ## MCP Servers
 
-11 MCP servers configured in `.mcp.json`:
+6 MCP servers in `.mcp.json` — each with a distinct, non-overlapping purpose:
 
-| Server | Primary Users |
-|--------|--------------|
-| `tradingview` | chart-analyst, signal-tracker |
-| `financial-analysis` | data-engineer, quant-analyst |
-| `brave-search` | research-analyst, compliance-officer |
-| `sqlite` | data-engineer |
-| `fetch` | data-engineer, quant-analyst, risk-manager |
-| `perplexity` | research-analyst, quant-analyst, orchestrator |
-| `playwright` | research-analyst, data-engineer, compliance-officer |
-| `firecrawl` | research-analyst, data-engineer, compliance-officer |
-| `glif` | report-writer, research-analyst |
-| `chrome` | data-engineer, research-analyst, compliance-officer |
-| `polymarket` | research-analyst, risk-manager, quant-analyst |
+| Server | Purpose | Primary Users |
+|--------|---------|--------------|
+| `tradingview` | Live chart access via TradingView Desktop CDP | chart-analyst, signal-tracker |
+| `financial-analysis` | Built-in Python tools: DCF, ratios, portfolio math, stock data | data-engineer, quant-analyst, risk-manager, portfolio-manager |
+| `sqlite` | Local financial database — cached data, signal logs, trade history | data-engineer, quant-analyst, signal-tracker |
+| `fetch` | Lightweight HTTP: SEC EDGAR, FRED, direct API calls | data-engineer, research-analyst, compliance-officer, orchestrator |
+| `playwright` | Browser automation for JS-heavy pages and research portals | research-analyst, data-engineer, compliance-officer |
+| `polymarket` | Crowd-implied event probabilities (read-only, DEMO_MODE) | research-analyst, quant-analyst, orchestrator |
 
 ## Safety & Permissions
 

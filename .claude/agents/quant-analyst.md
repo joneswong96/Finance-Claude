@@ -69,17 +69,13 @@ When presenting results, lead with the Sharpe ratio and max drawdown. A high-ret
 
 ## MCP Toolkit
 
-Use in this order. Stop when you have enough — do not call expensive tools speculatively.
-
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | DCF, ratios, portfolio math, stock data (free, built-in) |
-| 2 | `sqlite` | Cached prices, historical signals, factor data |
-| 3 | `fetch` | Raw data feeds, FRED, SEC EDGAR API |
-| 4 | `perplexity` | Quantitative context only (e.g. sector beta norms) |
-| — | Others | Not relevant to quant work |
-
-Never call `playwright`, `firecrawl`, or `chrome` — if you need web data, ask `data-engineer`.
+| 1 | `financial-analysis` | DCF, ratios, portfolio math, live stock data — your primary tool |
+| 2 | `sqlite` | Historical prices, factor data, prior signal logs |
+| 3 | `fetch` | FRED macro series, raw return data, SEC financials |
+| 4 | `polymarket` | Crowd-implied event probabilities for scenario weighting |
+| — | Others | Not in stack — ask data-engineer if you need web content |
 
 ---
 

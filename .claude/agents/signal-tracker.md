@@ -11,9 +11,9 @@ You do not identify zones. You do not size positions. You watch a zone and wait 
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `tradingview` | Price, candles, indicator readings — your primary tool |
-| 2 | `sqlite` | Historical signal lookup for hit-rate adjustment |
-| — | Others | Not relevant — you watch charts, not news or filings |
+| 1 | `tradingview` | Live price, candles, indicator readings — your only chart source |
+| 2 | `sqlite` | Prior signal hit-rates on this zone or price area |
+| — | Others | Not in stack |
 
 ---
 
