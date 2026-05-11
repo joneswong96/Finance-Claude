@@ -11,7 +11,7 @@ Agents are split into two tiers. **Tool agents** gather information and output s
 | Model | Agents | Rationale |
 |-------|--------|-----------|
 | **Opus** | orchestrator, research-analyst, portfolio-manager | Judgment, expert thesis, investment decisions |
-| **Sonnet** | data-engineer, quant-analyst, chart-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, structured templates |
+| **Sonnet** | data-engineer, quant-analyst, chart-analyst, day-trade-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, structured templates |
 
 ### Meta
 | Agent | Model | Role |
@@ -25,6 +25,7 @@ Agents are split into two tiers. **Tool agents** gather information and output s
 | `research-analyst` | Opus | Research Brief: qualitative thesis, fundamentals, why-triggers |
 | `quant-analyst` | Sonnet | Quant Brief: signals, backtest results, statistical anomalies |
 | `chart-analyst` | Sonnet | Zone Brief: macro zones (方向偏向) + immediate SNR ladder (7.5pt scalp entries) via TradingView |
+| `day-trade-analyst` | Sonnet | Day-Trade Brief: Grade A/B intraday entries (LONG + SHORT) with entry/SL/TP drawn on TradingView — activates via `/scan` |
 
 ### Actioner Agents — decision makers
 | Agent | Model | Role |
@@ -49,6 +50,7 @@ Each agent has a turn limit and output token budget enforced in its definition:
 | research-analyst | 6 (shallow: 3) | 1,000 tokens | ~$2.18 |
 | quant-analyst | 5 | 800 tokens | ~$0.33 |
 | chart-analyst | 6 (deep: 8) | 1,000 tokens | ~$0.30 |
+| day-trade-analyst | 8 | 1,200 tokens | ~$0.40 |
 | signal-tracker | 4 | 600 tokens | ~$0.15 |
 | risk-manager | 4 | 800 tokens | ~$0.23 |
 | portfolio-manager | 3 | 800 tokens | ~$0.98 |
@@ -56,7 +58,7 @@ Each agent has a turn limit and output token budget enforced in its definition:
 | compliance-officer | 3 | 600 tokens | ~$0.15 |
 
 **Estimated pipeline costs:**
-- `/scan` (technical): ~$0.65
+- `/scan` (day-trade): ~$0.40
 - `/analyze` (fundamental, no rebuttal): ~$5.00
 - `/analyze` (fundamental, with rebuttal): ~$6.70
 - `/analyze` (combined): ~$7.00
@@ -95,9 +97,15 @@ orchestrator spawns:
   7. report-writer                           → writes 07_memo.md
 ```
 
-**Technical trade signal:**
+**Technical trade signal (day trade):**
 ```
-/scan → chart-analyst (multi-TF: H4→H1→M15) → signal-tracker → risk-manager → portfolio-manager
+/scan → day-trade-analyst (D1→H4→H1→M15→M5, collect-all-then-analyse) → draws levels on TradingView
+/watch SYMBOL DIRECTION PROXIMAL DISTAL → signal-tracker → risk-manager → portfolio-manager
+```
+
+**Technical trade signal (swing, macro zones):**
+```
+chart-analyst (H4→H1→M15→M5) → signal-tracker → risk-manager → portfolio-manager
 ```
 
 **Combined conviction trade (fundamental + technical):**
@@ -115,9 +123,13 @@ orchestrator → data-engineer → [portfolio-manager + risk-manager] → report
 
 Every multi-agent analysis writes to `workspace/{TICKER}_{YYYYMMDD}/`. Agents communicate through files — not through the orchestrator. Workspace files are gitignored (ephemeral analysis output).
 
-## Zone Analysis Framework
+## Zone & Day-Trade Frameworks
 
-`chart-analyst` and `signal-tracker` use `skills/zone-analysis.md` as their shared framework. Zones scored 0–100; Grade A (75+) primary watch, Grade B (50–74) secondary, below 50 discarded.
+- `chart-analyst` and `signal-tracker` use `.claude/skills/zone-analysis.md` — zone scoring, grade boundaries, confluence rules
+- `day-trade-analyst` and `signal-tracker` use `.claude/skills/day-trade-setups.md` — 5 intraday setup types with entry/SL/TP rules
+- All technical agents reference `.claude/skills/indicator-readings.md` — standardised RSI/MACD/EMA/BB/Stochastic interpretation
+
+Zones scored 0–100; Grade A (75+) primary, Grade B (50–74) secondary, below 50 discarded.
 
 ## MCP Servers
 
@@ -159,6 +171,7 @@ Finance-Claude/
     ├── agents/
     │   ├── orchestrator.md
     │   ├── chart-analyst.md
+    │   ├── day-trade-analyst.md
     │   ├── signal-tracker.md
     │   ├── research-analyst.md
     │   ├── quant-analyst.md
@@ -177,7 +190,9 @@ Finance-Claude/
     │   └── compliance-review.md
     ├── mcp/                       # MCP server docs
     ├── skills/
-    │   └── zone-analysis.md
+    │   ├── zone-analysis.md
+    │   ├── day-trade-setups.md
+    │   └── indicator-readings.md
     ├── output-styles/
     │   └── memo.md
     └── hooks/
