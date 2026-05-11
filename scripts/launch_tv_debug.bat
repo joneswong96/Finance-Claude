@@ -3,7 +3,7 @@
 :: Required for chart-analyst and signal-tracker MCP tools
 
 set CDP_PORT=9222
-set TV_EXE=%LOCALAPPDATA%\Programs\TradingView\TradingView.exe
+set TV_EXE=C:\Program Files\WindowsApps\TradingView.Desktop_3.1.0.7818_x64__n534cwy3pjxzj\TradingView.exe
 
 echo [Finance-Claude] Checking for TradingView...
 

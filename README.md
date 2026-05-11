@@ -111,7 +111,7 @@ This script launches TradingView Desktop with CDP on port 9222 and verifies the 
 ### Manual launch
 
 ```bat
-"C:\Users\%USERNAME%\AppData\Local\Programs\TradingView\TradingView.exe" --remote-debugging-port=9222
+"C:\Program Files\WindowsApps\TradingView.Desktop_3.1.0.7818_x64__n534cwy3pjxzj\TradingView.exe" --remote-debugging-port=9222
 ```
 
 Then start Claude Code — the `tradingview` MCP server connects automatically via `.mcp.json`.

@@ -2,7 +2,7 @@
   "mcpServers": {
     "tradingview": {
       "command": "node",
-      "args": ["C:/Users/jones.wong/tradingview-mcp/src/server.js"]
+      "args": ["C:/Users/jones.w/tradingview-mcp/src/server.js"]
     },
     "financial-analysis": {
       "type": "stdio",
