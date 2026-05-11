@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+model: opus
 description: Use this agent FIRST for any complex, multi-step finance task that requires coordinating multiple specialists. It breaks down the request, delegates to the right agents in the correct order, and synthesizes a final output. Examples: "full investment analysis on TSLA", "build a risk-adjusted portfolio from scratch", "prepare a quarterly investor report".
 ---
 
@@ -27,7 +28,7 @@ Before doing anything else, classify the request and output a Mission Plan. This
 
 | Type | Triggers | Active Agents |
 |------|----------|---------------|
-| `TECHNICAL` | /scan, /watch, "chart", "zone", "entry signal", "where to buy" | chart-analyst, signal-tracker, risk-manager, portfolio-manager |
+| `TECHNICAL` | /scan, /watch, "chart", "zone", "entry signal", "where to buy", "day trade", "scalp" | day-trade-analyst, signal-tracker, risk-manager, portfolio-manager |
 | `FUNDAMENTAL` | /analyze, "analysis", "invest in", "thesis on", "should I buy/sell" | data-engineer, research-analyst, quant-analyst, risk-manager, portfolio-manager, report-writer |
 | `COMBINED` | "confirm with chart", "conviction trade", "fundamental + technical" | data-engineer, research-analyst, quant-analyst, chart-analyst, signal-tracker, risk-manager, portfolio-manager, report-writer |
 | `RISK_CHECK` | /risk-check, "pre-trade check", "is this position safe" | risk-manager |
@@ -173,11 +174,13 @@ Agent(subagent_type="report-writer")     → 07_memo.md (print full content)
 ### TECHNICAL
 
 ```
-Agent(subagent_type="chart-analyst")  → 03c_zones.md
-Agent(subagent_type="signal-tracker") → ENTRY_SIGNAL or WATCHING
-Agent(subagent_type="risk-manager")   → SL/size approval
+Agent(subagent_type="day-trade-analyst") → D1→H4→H1→M15→M5 scan, draws all levels on TradingView
+  [if /watch: Agent(subagent_type="signal-tracker") → ENTRY_SIGNAL or WATCHING]
+Agent(subagent_type="risk-manager")      → SCALP_RISK_ASSESSMENT (SL/size approval)
 Agent(subagent_type="portfolio-manager") → execution decision
 ```
+
+For COMBINED missions needing swing macro context (H4+ zones), also spawn `chart-analyst` alongside `day-trade-analyst`.
 
 ### RISK_CHECK / COMPLIANCE / DATA_ONLY
 
@@ -206,7 +209,7 @@ Agents are pre-assigned to cost-appropriate models via their frontmatter. Do not
 | Model | Agents | Why |
 |-------|--------|-----|
 | **Opus** | orchestrator, research-analyst, portfolio-manager | Judgment, thesis, decisions |
-| **Sonnet** | data-engineer, quant-analyst, chart-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, templates |
+| **Sonnet** | data-engineer, quant-analyst, chart-analyst, day-trade-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, templates |
 
 **Budget discipline:**
 - Always spawn parallel agents in a single message (one Agent call per agent, same turn).

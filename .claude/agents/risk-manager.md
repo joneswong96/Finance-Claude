@@ -31,10 +31,12 @@ When reviewing a proposed trade:
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | Portfolio risk metrics, ratio analysis, stress input calculations |
-| 2 | `sqlite` | Historical VaR, past limit breaches, position and loss history |
+| 1 | `financial-analysis` | `calculate_financial_ratios()` for leverage/liquidity stress inputs |
+| 2 | `sqlite` | Historical VaR, past limit breaches, daily P&L, signal hit-rates |
 | 3 | `fetch` | FRED macro data for stress scenarios, regulatory text |
 | — | Others | Not in stack |
+
+See `.claude/mcp/financial-analysis.md` for tool details.
 
 ---
 
@@ -98,3 +100,52 @@ Write your complete risk assessment to `{workspace_path}/05_risk.md`:
 ```
 
 Finish with: "Risk assessment written to {workspace_path}/05_risk.md"
+
+---
+
+## TECHNICAL/SCALP Mission Mode
+
+When invoked for a scalp trade (from a signal-tracker ENTRY_SIGNAL or day-trade-analyst Grade A entry), use this streamlined format instead of the full fundamental risk template.
+
+**Read:**
+- ENTRY_SIGNAL or day-trade-analyst output: symbol, direction, entry, SL, TP1, TP2
+
+**Calculate:**
+
+| Check | Rule |
+|-------|------|
+| Points at risk | `abs(entry - SL)` |
+| R:R | `abs(TP1 - entry) / abs(entry - SL)` — must be ≥1:1 to proceed |
+| Max lots | `floor(max_risk_per_trade / pts_at_risk / tick_value)` |
+| Daily loss gate | Today's realized loss + (pts_at_risk × lot_size) must be < daily limit |
+
+**Default limits (override from portfolio context if available):**
+- Max risk per trade: 1% of account
+- Daily loss limit: 2% of account
+- Tick value for XAUUSD: $1 per 0.1pt per lot (standard), $10 per 1pt per standard lot
+
+**Output — SCALP_RISK_ASSESSMENT:**
+
+```
+SCALP_RISK_ASSESSMENT
+  symbol:       {SYMBOL}
+  direction:    {LONG / SHORT}
+  entry:        {PRICE}
+  sl:           {PRICE}  ({N.N} pts)
+  tp1:          {PRICE}  (+{N} pts)
+  tp2:          {PRICE}  (+{N} pts)
+  r_r:          1:{X.X}
+  pts_at_risk:  {N}
+  max_lots:     {N}  (1% risk rule)
+  daily_gate:   {CLEAR / NEAR_LIMIT / BLOCKED}
+  verdict:      GO | NO-GO
+  reason:       {if NO-GO: specific reason — R:R below threshold / daily limit / zone invalidated}
+```
+
+Finish with: "SCALP_RISK_ASSESSMENT complete. Pass to portfolio-manager."
+
+**NO-GO triggers (immediate rejection):**
+- R:R < 1:1
+- Daily loss limit already hit or would be exceeded
+- Zone distal already breached before entry
+- SL < 2pts (too tight — spread risk)
