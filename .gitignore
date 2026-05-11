@@ -13,6 +13,9 @@ CLAUDE.local.md
 __pycache__/
 *.py[cod]
 *.egg-info/
+*.egg
+dist/
+build/
 .venv/
 venv/
 .ipynb_checkpoints/
@@ -30,6 +33,10 @@ data/processed/
 
 # Notebooks output (commit clean notebooks only)
 *-checkpoint.ipynb
+
+# Workspace analysis output (ephemeral, not committed)
+workspace/*/
+!workspace/.gitkeep
 
 # OS
 .DS_Store

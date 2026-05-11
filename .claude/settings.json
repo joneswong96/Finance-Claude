@@ -40,6 +40,7 @@
       "Read(./**/*secret*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "hooks": {
     "PreToolUse": [
       {
