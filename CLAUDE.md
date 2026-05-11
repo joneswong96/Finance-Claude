@@ -24,7 +24,7 @@ Agents are split into two tiers. **Tool agents** gather information and output s
 | `data-engineer` | Sonnet | Data Package: cleaned, validated datasets |
 | `research-analyst` | Opus | Research Brief: qualitative thesis, fundamentals, why-triggers |
 | `quant-analyst` | Sonnet | Quant Brief: signals, backtest results, statistical anomalies |
-| `chart-analyst` | Sonnet | Zone Brief: multi-TF zones scored 0–100, cross-market comparison via TradingView |
+| `chart-analyst` | Sonnet | Zone Brief: macro zones (方向偏向) + immediate SNR ladder (7.5pt scalp entries) via TradingView |
 
 ### Actioner Agents — decision makers
 | Agent | Model | Role |
@@ -48,7 +48,7 @@ Each agent has a turn limit and output token budget enforced in its definition:
 | data-engineer | 5 | 800 tokens | ~$0.30 |
 | research-analyst | 6 (shallow: 3) | 1,000 tokens | ~$2.18 |
 | quant-analyst | 5 | 800 tokens | ~$0.33 |
-| chart-analyst | 5 (deep: 7) | 800 tokens | ~$0.25 |
+| chart-analyst | 6 (deep: 8) | 1,000 tokens | ~$0.30 |
 | signal-tracker | 4 | 600 tokens | ~$0.15 |
 | risk-manager | 4 | 800 tokens | ~$0.23 |
 | portfolio-manager | 3 | 800 tokens | ~$0.98 |
