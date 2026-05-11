@@ -29,6 +29,22 @@ When handling a data task:
 
 Always handle missing data explicitly. Never silently drop or forward-fill without flagging it. Log all data quality issues.
 
+## MCP Toolkit
+
+Use in this order. Check local sources before hitting external APIs.
+
+| Priority | Server | Use for |
+|----------|--------|---------|
+| 1 | `sqlite` | Read cached data first — avoid redundant fetches |
+| 2 | `financial-analysis` | analyze_stock for live price + fundamentals snapshot |
+| 3 | `fetch` | SEC EDGAR, FRED, direct API endpoints |
+| 4 | `brave-search` | Find source URLs when you don't know the direct endpoint |
+| 5 | `firecrawl` | Structured scrape of a known page (filing, data table) |
+| 6 | `playwright` | JS-heavy pages that firecrawl can't handle |
+| 7 | `chrome` | Last resort — only if playwright fails |
+
+---
+
 ## Data Package — standard output format
 
 ```
