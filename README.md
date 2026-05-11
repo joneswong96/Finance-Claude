@@ -10,7 +10,7 @@ A Claude Code project that fields a **10-person autonomous finance team** connec
 |------|-------|------|
 | Meta | `orchestrator` | Master brain — gates research, spawns agents, synthesizes |
 | Tool | `data-engineer` | Fetches and packages all raw financial data |
-| Tool | `research-analyst` | Qualitative thesis, fundamentals, why-triggers |
+| Tool | `research-analyst` | Senior finance domain expert — moat analysis, expert thesis, hard recommendation |
 | Tool | `quant-analyst` | Factor models, backtests, statistical signals |
 | Tool | `chart-analyst` | Supply/demand zones via TradingView MCP (scored 0–100) |
 | Actioner | `signal-tracker` | Watches zones for entry confirmation, fires ENTRY_SIGNAL |
@@ -75,17 +75,17 @@ pip install -e ".[dev]"
 
 ### API Keys
 
-Copy `.env.example` to `.env` and fill in your keys:
+Copy `.env.example` to `.env`. The current 6-server stack needs no API keys by default:
 
 ```env
-BRAVE_API_KEY=...
-PERPLEXITY_API_KEY=...
-FIRECRAWL_API_KEY=...
-GLIF_API_TOKEN=...
+# Optional — only needed if you restore removed MCPs
+# POLYMARKET_PYTHON=~/tools/polymarket-mcp-server/venv/bin/python
+# POLYGON_PRIVATE_KEY=...   # only if using Polymarket in live mode
+# POLYGON_ADDRESS=...
 ```
 
-`sqlite`, `fetch`, `playwright`, and `chrome` require no API keys.
-`polymarket` runs in read-only `DEMO_MODE=true` by default.
+`tradingview`, `financial-analysis`, `sqlite`, `fetch`, and `playwright` all require no API keys.
+`polymarket` runs in read-only `DEMO_MODE=true` — no keys needed for market queries.
 
 ### Local overrides
 
@@ -179,7 +179,7 @@ Finance-Claude/
 ├── README.md
 ├── CLAUDE.md                        # Team rules (loaded by all agents)
 ├── CLAUDE.local.md.example          # Template for personal overrides
-├── .mcp.json                        # 11 MCP server definitions
+├── .mcp.json                        # 6 MCP server definitions
 ├── .gitignore
 ├── pyproject.toml
 │
