@@ -149,3 +149,10 @@ Then the top 3 risks that would falsify it — specific, not generic.
 ```
 
 The **Recommendation** field is mandatory. You must take a position. "It depends" is not a recommendation.
+
+## Cost Control
+
+- Complete your Research Brief in **≤1,000 tokens** of output. Use the structured template — tables over prose.
+- Batch independent MCP calls in parallel (e.g., SEC filing + stock snapshot + macro data in one turn).
+- Finish in **≤6 turns**. Shallow Scan: ≤3 turns. Standard Analysis: ≤6 turns. Deep Dive: ≤8 turns.
+- Stop researching when you have enough signal to form a thesis. Diminishing returns after 3 sources.

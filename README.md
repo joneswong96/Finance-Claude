@@ -6,18 +6,20 @@ A Claude Code project that fields a **10-person autonomous finance team** connec
 
 ## The Team
 
-| Tier | Agent | Role |
-|------|-------|------|
-| Meta | `orchestrator` | Master brain — gates research, spawns agents, synthesizes |
-| Tool | `data-engineer` | Fetches and packages all raw financial data |
-| Tool | `research-analyst` | Senior finance domain expert — moat analysis, expert thesis, hard recommendation |
-| Tool | `quant-analyst` | Factor models, backtests, statistical signals |
-| Tool | `chart-analyst` | Supply/demand zones via TradingView MCP (scored 0–100) |
-| Actioner | `signal-tracker` | Watches zones for entry confirmation, fires ENTRY_SIGNAL |
-| Actioner | `risk-manager` | VaR, stress tests, stop levels, position limits |
-| Actioner | `portfolio-manager` | Allocation decision, conviction score, trade plan |
-| Actioner | `compliance-officer` | Regulatory sign-off on all client-facing output |
-| Actioner | `report-writer` | Bilingual investment memo with score card and audit trail |
+| Tier | Agent | Model | Role |
+|------|-------|-------|------|
+| Meta | `orchestrator` | Opus | Master brain — gates research, spawns agents, synthesizes |
+| Tool | `data-engineer` | Sonnet | Fetches and packages all raw financial data |
+| Tool | `research-analyst` | Opus | Senior finance domain expert — moat analysis, expert thesis, hard recommendation |
+| Tool | `quant-analyst` | Sonnet | Factor models, backtests, statistical signals |
+| Tool | `chart-analyst` | Sonnet | Multi-TF zone analysis + cross-market comparison via TradingView MCP (scored 0–100) |
+| Actioner | `signal-tracker` | Sonnet | Watches zones for entry confirmation, fires ENTRY_SIGNAL |
+| Actioner | `risk-manager` | Sonnet | VaR, stress tests, stop levels, position limits |
+| Actioner | `portfolio-manager` | Opus | Allocation decision, conviction score, trade plan |
+| Actioner | `compliance-officer` | Sonnet | Regulatory sign-off on all client-facing output |
+| Actioner | `report-writer` | Sonnet | Bilingual investment memo with score card and audit trail |
+
+**Model routing:** Opus for agents that require expert judgment (orchestrator, research-analyst, portfolio-manager). Sonnet for data gathering, calculations, and structured templates (7 agents). This reduces pipeline cost by ~62%.
 
 **Tool agents** write shared briefs. **Actioner agents** consume those briefs and decide. Actioners never re-gather data.
 
@@ -133,7 +135,9 @@ If chart-analyst returns zone data, TradingView MCP is working.
 ```
 [Research Gate] → data-engineer (01_data.md)
               → research-analyst + quant-analyst in parallel (03a + 03b)
-              → cross-debate rebuttals (04a + 04b)
+              → [Rebuttal Gate] if directions disagree:
+                  cross-debate rebuttals (04a + 04b)
+                  if agree: skip rebuttals (saves ~$1.70)
               → orchestrator synthesis (04c) with named warning flags
               → risk-manager (05_risk.md)
               → portfolio-manager (06_portfolio.md)
@@ -143,7 +147,8 @@ If chart-analyst returns zone data, TradingView MCP is working.
 ### Technical analysis (`/scan` + `/watch`)
 
 ```
-chart-analyst → zones scored 0-100
+chart-analyst → multi-TF cascade (H4→H1→M15), zones scored 0-100
+             → optional: cross-market comparison (Deep Research mode)
 signal-tracker → waits for confirmation inside zone → ENTRY_SIGNAL
 risk-manager → approves SL/size
 portfolio-manager → executes
@@ -158,6 +163,18 @@ Before any research is commissioned, the orchestrator scores the request:
 - **Low on both** → skip, use cached knowledge, flag assumption
 
 Inside research, the analyst runs: **Shallow Scan** (default) → **Standard Analysis** → **Deep Dive** (triggered by Why Triggers: >2σ deviation, conflicting signals, crowd divergence >15pp).
+
+### Estimated costs per command
+
+| Command | Pipeline | Approx Cost |
+|---------|----------|-------------|
+| `/scan XAUUSD` | chart-analyst → signal-tracker → risk → PM | ~$0.65 |
+| `/analyze TSLA` (consensus) | Full pipeline, rebuttals skipped | ~$5.00 |
+| `/analyze TSLA` (debate) | Full pipeline, rebuttals triggered | ~$6.70 |
+| `/risk-check` | risk-manager only | ~$0.23 |
+| `/quarterly-report` | data → PM + risk → writer → compliance | ~$4.50 |
+
+Costs are estimates based on Opus ($15/$75 per M tokens) and Sonnet ($3/$15 per M tokens) pricing.
 
 ---
 

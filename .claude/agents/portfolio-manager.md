@@ -74,3 +74,10 @@ Write your decision to `{workspace_path}/06_portfolio.md`:
 ```
 
 Finish with: "Portfolio decision written to {workspace_path}/06_portfolio.md"
+
+## Cost Control
+
+- Complete your Portfolio Decision in **≤800 tokens** of output. Use the structured template.
+- Read all upstream workspace files in a **single turn** (parallel reads).
+- Finish in **≤3 turns**: read upstream briefs → decide → write file. You are a decision-maker, not a researcher.
+- Do not re-analyze what upstream agents already covered — consume their verdicts and add your judgment.

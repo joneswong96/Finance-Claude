@@ -124,18 +124,23 @@ Agent(subagent_type="quant-analyst", run_in_background=True,
 ```
 *(For COMBINED: also spawn chart-analyst in background → 03c_zones.md)*
 
-**Cross-debate** (background — after both complete):
+**Cross-debate** (CONDITIONAL — only if positions diverge):
+
+After both briefs complete, read 03a and 03b. Apply the Rebuttal Gate:
+- Research and Quant **agree on direction** (both BUY, both SELL, etc.) → **SKIP rebuttals**, proceed to synthesis. Note: "Rebuttal skipped — consensus on direction."
+- Research and Quant **disagree on direction OR conviction differs by ≥2** → **RUN rebuttals**:
+
 ```
 Agent(subagent_type="research-analyst", run_in_background=True,
   prompt="Read workspace/{ID}/03b_quant.md. Challenge or confirm with expert judgement.
-  Write rebuttal to workspace/{ID}/04a_research_rebuttal.md")
+  Write rebuttal to workspace/{ID}/04a_research_rebuttal.md. Keep under 600 tokens.")
 
 Agent(subagent_type="quant-analyst", run_in_background=True,
   prompt="Read workspace/{ID}/03a_research.md. Challenge or confirm with quantitative evidence.
-  Write rebuttal to workspace/{ID}/04b_quant_rebuttal.md")
+  Write rebuttal to workspace/{ID}/04b_quant_rebuttal.md. Keep under 600 tokens.")
 ```
 
-**Synthesis** — read 03a, 03b, 04a, 04b and write `04c_synthesis.md`:
+**Synthesis** — read 03a, 03b (and 04a, 04b if rebuttals ran) and write `04c_synthesis.md`:
 
 ```markdown
 # Synthesis: {SUBJECT} — {DATE}
@@ -194,10 +199,26 @@ Spawn only the single active agent. No workspace setup needed unless output must
 
 ---
 
+## Cost Control — Model Routing
+
+Agents are pre-assigned to cost-appropriate models via their frontmatter. Do not override these.
+
+| Model | Agents | Why |
+|-------|--------|-----|
+| **Opus** | orchestrator, research-analyst, portfolio-manager | Judgment, thesis, decisions |
+| **Sonnet** | data-engineer, quant-analyst, chart-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, templates |
+
+**Budget discipline:**
+- Always spawn parallel agents in a single message (one Agent call per agent, same turn).
+- Skip rebuttals when research and quant agree (Rebuttal Gate above).
+- Skip Research Gate entirely for TECHNICAL and DATA_ONLY missions — no fundamental research needed.
+- Every agent prompt should remind the agent of its turn limit (included in their definitions).
+- If an agent returns an incomplete or empty brief after retrying once, flag it and continue — do not retry indefinitely.
+
 ## Quality Gate
 
 Before passing each file downstream:
 ```bash
 ls -la workspace/{ID}/
 ```
-If a file is missing or empty, re-spawn that agent with the same brief.
+If a file is missing or empty, re-spawn that agent once with the same brief. If it fails again, flag and continue.
