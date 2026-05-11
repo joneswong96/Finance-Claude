@@ -34,6 +34,10 @@ data/processed/
 # Notebooks output (commit clean notebooks only)
 *-checkpoint.ipynb
 
+# Workspace analysis output (ephemeral, not committed)
+workspace/*/
+!workspace/.gitkeep
+
 # OS
 .DS_Store
 Thumbs.db

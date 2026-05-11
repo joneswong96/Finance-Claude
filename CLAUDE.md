@@ -37,27 +37,44 @@ Run `tv_health_check` to verify connection.
 
 ## Standard Workflow Sequences
 
+**Full investment analysis (with cross-debate):**
+```
+orchestrator spawns:
+  1. data-engineer                           → writes workspace/{ID}/01_data.md
+  2. research-analyst + quant-analyst        → write 03a + 03b (parallel, read 01)
+  3. research-analyst + quant-analyst        → write 04a + 04b rebuttals (parallel, read each other)
+  4. orchestrator                            → writes 04c synthesis
+  5. risk-manager                            → writes 05_risk.md (reads 04c)
+  6. portfolio-manager                       → writes 06_portfolio.md (reads 04c + 05)
+  7. report-writer                           → writes 07_memo.md (reads all)
+```
+
 **Technical trade signal:**
 ```
 /scan → chart-analyst → signal-tracker → risk-manager → portfolio-manager
 ```
 
-**Combined conviction trade (fundamental + technical):**
+**Combined conviction trade (fundamental + technical aligned):**
 ```
 orchestrator → [research-analyst + quant-analyst + chart-analyst] (parallel)
              → signal-tracker (waits for zone entry timing)
              → risk-manager → portfolio-manager → report-writer
 ```
 
-**Full fundamental analysis:**
-```
-orchestrator → data-engineer → [research-analyst + quant-analyst] → risk-manager → portfolio-manager → report-writer
-```
-
 **Quarterly investor report:**
 ```
 orchestrator → data-engineer → [portfolio-manager + risk-manager] → report-writer → compliance-officer
 ```
+
+## Shared Workspace Protocol
+
+Every multi-agent analysis uses a shared workspace so agents communicate through files, not through the orchestrator:
+
+- **Path**: `workspace/{TICKER}_{YYYYMMDD}/`
+- **Each agent** reads its inputs from and writes its outputs to the workspace directory
+- **Naming convention**: `01_data.md`, `03a_research.md`, `03b_quant.md`, `04a_research_rebuttal.md`, `04b_quant_rebuttal.md`, `04c_synthesis.md`, `05_risk.md`, `06_portfolio.md`, `07_memo.md`
+- **Cross-debate**: after parallel analysis, each analyst reads the other's output and writes a rebuttal before the orchestrator synthesizes
+- Workspace files are gitignored (treated as ephemeral analysis output)
 
 ## Zone Analysis Framework
 
@@ -73,7 +90,7 @@ The `chart-analyst` and `signal-tracker` agents use `skills/zone-analysis.md` as
 
 - `.claude/settings.json` — pre-approves common Python/git/data commands; denies destructive ones
 - `.claude/hooks/block-large-data-files.sh` — blocks large data files and secret patterns
-- `.gitignore` — excludes `.env`, secrets, data files
+- `.gitignore` — excludes `.env`, secrets, data files, workspace output
 
 ## Local Setup
 
@@ -89,7 +106,7 @@ Finance-Claude/
 ├── CLAUDE.md                      # this file
 ├── CLAUDE.local.md.example
 ├── .gitignore
-├── .mcp.json                      # TradingView MCP server config
+├── .mcp.json                      # MCP server configs
 └── .claude/
     ├── settings.json
     ├── agents/

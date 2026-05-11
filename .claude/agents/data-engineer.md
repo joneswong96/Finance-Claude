@@ -28,3 +28,40 @@ When handling a data task:
 5. Document the data lineage and any transformations applied
 
 Always handle missing data explicitly. Never silently drop or forward-fill without flagging it. Log all data quality issues.
+
+---
+
+## Workspace Protocol
+
+When invoked as part of a multi-agent analysis, you will be given a workspace path (e.g., `workspace/TRAW_20260510/`).
+
+**You must:**
+1. Perform your full data gathering and validation
+2. Write your complete structured output to `{workspace_path}/01_data.md`
+3. Use clear section headers so downstream agents can find specific data quickly
+4. Include a `## Data Quality Flags` section at the end listing any gaps, anomalies, or assumptions
+
+**Output format for `01_data.md`:**
+```
+# Data Package: {TICKER} — {DATE}
+
+## Market Data
+[price, volume, market cap, 52w range, etc.]
+
+## Financial Fundamentals
+[cash, burn, revenue, equity, debt, etc.]
+
+## Pipeline / Products
+[what the company makes/does]
+
+## Recent Filings & News
+[SEC filings, key 8-Ks, recent press releases]
+
+## Competitive Landscape
+[peers, market structure]
+
+## Data Quality Flags
+[gaps, stale data, assumptions made]
+```
+
+Write the file, then confirm: "Data package written to {workspace_path}/01_data.md"

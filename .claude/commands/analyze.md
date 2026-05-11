@@ -3,13 +3,16 @@ description: Full investment analysis on a ticker (orchestrates the full team)
 argument-hint: <TICKER> [horizon]
 ---
 
-Use the `orchestrator` agent to run a full investment analysis on **$ARGUMENTS**.
+Spawn the `orchestrator` agent to run a full investment analysis on **$ARGUMENTS**.
 
-The orchestrator should:
-1. Send `data-engineer` to gather price history, fundamentals, and recent filings
-2. Run `research-analyst` (qualitative thesis) and `quant-analyst` (factor exposures, statistical signals) in parallel
-3. Have `risk-manager` evaluate position sizing and risk impact
-4. Get a final recommendation from `portfolio-manager`
-5. Have `report-writer` produce a clean investment memo
+The orchestrator will manage the entire workflow autonomously:
+1. Create a shared workspace at `workspace/{TICKER}_{DATE}/`
+2. Spawn `data-engineer` to gather and write all data to the workspace
+3. Spawn `research-analyst` and `quant-analyst` **in parallel** — each reads the data file directly
+4. Run a **cross-debate round** — each analyst reads the other's output and writes a rebuttal
+5. Orchestrator writes a synthesis resolving all disagreements
+6. Spawn `risk-manager` — reads the synthesis directly from the workspace
+7. Spawn `portfolio-manager` — reads risk assessment directly from the workspace
+8. Spawn `report-writer` — reads all workspace files and produces the final memo
 
-Final output: a one-page memo with thesis, key metrics, risks, and a clear buy/hold/sell recommendation.
+The orchestrator returns the final memo plus a list of any unresolved team disagreements.
