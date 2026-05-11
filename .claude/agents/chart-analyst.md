@@ -155,11 +155,12 @@ This is the **actionable layer**. Identify all SNR levels within ±30pts of curr
 - Pine labels: PDH, PDL, session high/low, equilibrium, CHoCH levels
 - Pine horizontal lines: any level drawn by indicators
 - SMA values that cluster near price (SMA 20, 80, 150 acting as dynamic SNR)
+- VWAP value from `data_get_study_values` (institutional fair value — strong dynamic SNR)
 - Round numbers (e.g., x00, x50 levels)
 - MACD zero-line crosses or divergences near these levels
 
 **For each SNR level, classify:**
-- **Type**: swing high, swing low, order block edge, SMA, round number, Pine level
+- **Type**: swing high, swing low, order block edge, SMA, VWAP, round number, Pine level
 - **Strength**: strong (multiple confluences) / moderate (single source) / weak
 - **Distance** from current price in pts
 
@@ -290,7 +291,7 @@ SNR_LADDER (within ±30pts of current price)
 
   阻力 (Resistance — above price):
     R1: 4682  [PDL, M5 swing high]           強度: strong
-    R2: 4688  [SMA 150, equilibrium]          強度: strong
+    R2: 4688  [SMA 150, VWAP, equilibrium]    強度: strong
     R3: 4694  [M15 swing high]                強度: moderate
     R4: 4702  [CHoCH, S1 zone proximal]       強度: strong
 
