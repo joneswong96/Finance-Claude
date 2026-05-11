@@ -88,7 +88,7 @@ quote_get                → live price snapshot
 data_get_study_values    → all visible indicator values
 ```
 
-Note the current symbol and what indicators are loaded. This is your baseline.
+Note the current symbol and what indicators are loaded. **Check for Pine Script indicators** (e.g., LuxAlgo Smart Money Concepts, ICT indicators, custom zone tools). If any are present, they are a primary data source — their drawings contain structural analysis (CHoCH, BOS, order blocks, equilibrium zones, FVGs) that directly feeds zone identification.
 
 ### Turn 2 — H4 Structure (dominant bias)
 ```
@@ -97,33 +97,53 @@ data_get_ohlcv(summary=true)
 data_get_study_values
 ```
 
+**Also read Pine Script indicator output** if custom indicators are loaded:
+```
+data_get_pine_labels(study_filter="[indicator name]")  → CHoCH, BOS, bias labels
+data_get_pine_boxes(study_filter="[indicator name]")   → order blocks, FVGs, zones as {high, low}
+data_get_pine_lines(study_filter="[indicator name]")   → key horizontal levels
+```
+
+These Pine drawings are **higher quality than manual zone identification** — they are algorithmically derived from price structure. Use them as primary zone candidates and validate with your own analysis.
+
 Identify:
 - Dominant trend direction (higher highs/lows or lower highs/lows)
+- CHoCH / BOS markers from Pine indicators (structural shifts)
 - Key levels where price stalled or reversed
-- Candidate supply/demand zones at this timeframe
+- Candidate supply/demand zones: merge Pine-detected zones with your own
 
 ### Turn 3 — H1 Confirmation
 ```
 chart_set_timeframe("60")
 data_get_ohlcv(summary=true)
 data_get_study_values
+data_get_pine_labels(study_filter="...")   → if Pine indicators present
+data_get_pine_boxes(study_filter="...")    → if Pine indicators present
 ```
 
 Narrow zone clusters. Confirm or reject H4 candidates. Look for:
 - Zones that align with H4 structure (+15 confluence)
 - Fresh zones not visible on H4
+- Pine indicator equilibrium/discount zones — these mark institutional fair value
+- CHoCH on H1 confirming or contradicting H4 bias
 
 ### Turn 4 — M15 Entry Precision
 ```
 chart_set_timeframe("15")
 data_get_ohlcv(summary=true)
 data_get_study_values
+data_get_pine_labels(study_filter="...")   → if Pine indicators present
+data_get_pine_boxes(study_filter="...")    → if Pine indicators present
 ```
 
 Pinpoint exact zone boundaries (proximal and distal edges). This is your entry timeframe.
+- Pine-detected order blocks on M15 give the most precise zone edges
+- Equilibrium labels mark the mid-point of the current range (key for bias)
+- Discount/Premium labels tell you which side of fair value price is on
 
 ### Turn 5 — Score, Draw, Output
 - Score all candidate zones using the Zone Scoring System below
+- **Integrate Pine indicator data into scoring**: CHoCH alignment adds to confluence, order block overlap with your zones increases origin strength confidence
 - Draw the top zones on chart: `draw_shape` (rectangle for zone, horizontal_line for key levels)
 - Capture 1 screenshot showing the primary zone
 - Write the ZONE_SIGNAL output
@@ -188,7 +208,13 @@ Score each candidate zone across these dimensions:
 | Zone aligns across 2+ timeframes | +15 |
 | High volume at zone origin | +10 |
 
-**Total = Freshness + Origin Strength + Confluence (max 100)**
+**Pine Indicator Bonus (0–10 pts)** — only if custom indicators (LuxAlgo SMC, ICT, etc.) are loaded
+| Condition | Score |
+|-----------|-------|
+| Zone overlaps with Pine-detected order block / FVG | +5 |
+| CHoCH or BOS marker confirms zone direction on same TF | +5 |
+
+**Total = Freshness + Origin Strength + Confluence + Pine Bonus (max 110, capped at 100)**
 
 | Score | Grade | Action |
 |-------|-------|--------|
@@ -220,15 +246,17 @@ ZONE_SIGNAL
   zone_type:     DEMAND | SUPPLY
   proximal:      2048.5
   distal:        2041.0
-  grade:         A (score: 82/100)
+  grade:         A (score: 87/100)
     freshness:   40 (never tested)
     origin:      32 (explosive departure)
     confluence:  10 (H4+H1 aligned)
+    pine_bonus:  5 (CHoCH confirms direction)
   status:        APPROACHING | INSIDE | TESTED
   distance:      +34.5 pts from proximal edge
   invalidation:  Close below 2038.0
+  smc_context:   CHoCH bearish at 2055, BOS at 2043, equilibrium at 2049, price in discount zone
   cross_market:  [Deep Research only] DXY weakening — supports gold demand
-  notes:         Zone origin: strong 3-candle demand burst on H1 2024-01-15
+  notes:         Zone origin: strong 3-candle demand burst on H1 2024-01-15. LuxAlgo order block overlaps zone.
   pass_to:       signal-tracker
 ```
 
