@@ -24,10 +24,10 @@ When making portfolio decisions:
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | assess_portfolio for live P&L, concentration, allocation |
-| 2 | `sqlite` | Current holdings, historical trades, benchmark data |
-| 3 | `fetch` | Live price checks before sizing |
-| — | Others | Not relevant — you consume workspace briefs, not raw sources |
+| 1 | `financial-analysis` | assess_portfolio (live P&L, allocation, concentration risk) |
+| 2 | `sqlite` | Current holdings, historical trade log, benchmark returns |
+| 3 | `fetch` | Live price confirmation before final sizing |
+| — | Others | Not in stack — you consume workspace briefs, not raw web sources |
 
 ---
 

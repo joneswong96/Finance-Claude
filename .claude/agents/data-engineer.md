@@ -31,17 +31,15 @@ Always handle missing data explicitly. Never silently drop or forward-fill witho
 
 ## MCP Toolkit
 
-Use in this order. Check local sources before hitting external APIs.
-
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `sqlite` | Read cached data first — avoid redundant fetches |
-| 2 | `financial-analysis` | analyze_stock for live price + fundamentals snapshot |
-| 3 | `fetch` | SEC EDGAR, FRED, direct API endpoints |
-| 4 | `brave-search` | Find source URLs when you don't know the direct endpoint |
-| 5 | `firecrawl` | Structured scrape of a known page (filing, data table) |
-| 6 | `playwright` | JS-heavy pages that firecrawl can't handle |
-| 7 | `chrome` | Last resort — only if playwright fails |
+| 1 | `sqlite` | Cached data first — never re-fetch what's already stored |
+| 2 | `financial-analysis` | Live price, fundamentals snapshot, portfolio math |
+| 3 | `fetch` | SEC EDGAR, FRED, direct API endpoints — primary sources |
+| 4 | `playwright` | JS-heavy pages, earnings transcripts, structured scrape |
+| — | Others | Not in stack |
+
+**Best source first.** A direct SEC filing via `fetch` beats any synthesized summary. Cache results to `sqlite` after fetching — don't re-fetch the same data in the same session.
 
 ---
 

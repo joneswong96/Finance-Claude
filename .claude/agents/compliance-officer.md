@@ -18,11 +18,10 @@ Your responsibilities:
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `fetch` | SEC EDGAR filings, FINRA lookups, regulatory text (free) |
-| 2 | `brave-search` | Regulatory news, enforcement actions, sanctions lists |
-| 3 | `firecrawl` | Structured scrape of regulatory portals |
-| 4 | `playwright` | Interactive regulatory portals that require navigation |
-| — | Others | Not relevant |
+| 1 | `fetch` | SEC EDGAR, FINRA, regulatory text — primary sources |
+| 2 | `playwright` | Interactive regulatory portals requiring navigation |
+| 3 | `sqlite` | Internal audit trail, prior compliance decisions |
+| — | Others | Not in stack |
 
 ---
 
