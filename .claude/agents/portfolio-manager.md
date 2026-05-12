@@ -102,6 +102,53 @@ EXECUTION_DECISION
 
 Do not re-analyze the chart. Do not resize. Risk-manager already set limits — execute within them or pass.
 
+---
+
+## SWING Execution Protocol
+
+When downstream of a SWING mission (receiving a `SWING_RISK_ASSESSMENT` from risk-manager):
+
+1. Read `SWING_RISK_ASSESSMENT` — do not proceed if verdict is NO-GO
+2. Determine batch split based on setup_type:
+
+| Setup Type | Batch Split | Rationale |
+|------------|------------|-----------|
+| TREND_PULLBACK | 60% first / 40% second | Zone has two entry opportunities: proximal and mid-zone |
+| BREAKOUT | 70% first / 30% second | Momentum entries favor heavier first entry |
+| RSI_DIVERGENCE | 100% single | Timing is imprecise; batch doesn't help divergence setups |
+
+3. Output a concise swing execution decision:
+
+```
+SWING_EXECUTION_DECISION
+  symbol:        {TICKER}
+  direction:     {LONG / SHORT}
+  setup_type:    {TREND_PULLBACK / BREAKOUT / RSI_DIVERGENCE}
+  action:        {EXECUTE / PASS}
+
+  批次計劃:
+    第1批:  {PCT}%  @  {PRICE}  — {觸發條件}
+    第2批:  {PCT}%  @  {PRICE}  — {觸發條件，如適用}
+
+  止損:    {PRICE}  ({PCT}% — 結構性止損)
+  止利1:   {PRICE}  (+{PCT}%) → 平倉60%，止損移至保本
+  止利2:   {PRICE}  (+{PCT}%) → 追蹤剩餘40%
+  R:R:     1:{X.X}
+
+  建議倉位: {N}% of portfolio
+  最長持倉: 4週 (到期: {DATE})
+
+  🔔 提醒設置 (手動在IBKR / Futu設置):
+    進場提醒:  {TICKER} @ {H1_ENTRY_PRICE}  (H1觸發確認)
+    止損提醒:  {TICKER} @ {SL_PRICE}        (跌穿即出場)
+    止利提醒:  {TICKER} @ {TP1_PRICE}       (第1目標)
+    作廢提醒:  {TICKER} @ {INVALIDATION}    (D1收盤跌破 → 分析失效)
+
+  rationale: {one sentence — why this setup fits current portfolio context}
+```
+
+Do not re-analyze. Do not resize. Risk-manager already approved limits.
+
 ## Cost Control
 
 - Complete your Portfolio Decision in **≤800 tokens** of output. Use the structured template.

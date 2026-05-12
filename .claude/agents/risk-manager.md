@@ -149,3 +149,57 @@ Finish with: "SCALP_RISK_ASSESSMENT complete. Pass to portfolio-manager."
 - Daily loss limit already hit or would be exceeded
 - Zone distal already breached before entry
 - SL < 2pts (too tight — spread risk)
+
+---
+
+## SWING Mission Mode
+
+When invoked for a swing trade (from chart-analyst `SWING_ZONE_SIGNAL` + data-engineer `SWING_CATALYST`):
+
+**Read:**
+- `SWING_ZONE_SIGNAL`: symbol, direction, setup_type, h1_entry, structural_sl, d1_proximal, d1_distal
+- `SWING_CATALYST`: earnings_date, days_to_earnings, sector_trend
+
+**Calculate:**
+
+| Check | Rule |
+|-------|------|
+| R:R | `abs(tp1 - entry) / abs(entry - sl)` — must be ≥ 2:1 |
+| SL distance % | `abs(entry - sl) / entry × 100` — expect 3–5% |
+| Earnings gate | days_to_earnings < 5 → NO-GO; 5–14 → half-size only |
+| Liquidity | ADV must be ≥ 1M shares (from SWING_CATALYST) |
+| Max position size | 2–5% of portfolio (swing, not scalp) |
+
+**TP1 calculation:**
+- TP1 = next D1 resistance above entry (from SWING_ZONE_SIGNAL notes or swing-setups.md logic)
+- Verify R:R ≥ 2:1 using `abs(TP1 - entry) / abs(entry - SL)`
+- If R:R < 2:1 at TP1 → NO-GO (zone too close, setup doesn't qualify)
+
+**Output — SWING_RISK_ASSESSMENT:**
+
+```
+SWING_RISK_ASSESSMENT
+  symbol:           {TICKER}
+  direction:        {LONG / SHORT}
+  setup_type:       {TREND_PULLBACK / BREAKOUT / RSI_DIVERGENCE}
+  entry:            {PRICE}
+  sl:               {PRICE}  ({PCT}% from entry — structural)
+  tp1:              {PRICE}  (+{PCT}% from entry)
+  tp2:              {PRICE}  (+{PCT}% from entry — extension)
+  r_r:              1:{X.X}
+  sl_pct:           {N.N}%   (distance from entry to SL)
+  earnings_gate:    CLEAR ({N} days) | HALF-SIZE ({N} days) | NO-GO ({N} days)
+  adv_gate:         CLEAR ({N}M avg shares) | FAIL ({N}M — below 1M threshold)
+  max_position_pct: {N}%  (swing limit)
+  verdict:          GO | GO-HALF | NO-GO
+  reason:           {if NO-GO or GO-HALF: specific reason}
+```
+
+Finish with: "SWING_RISK_ASSESSMENT complete. Pass to portfolio-manager."
+
+**NO-GO triggers (swing — immediate rejection):**
+- R:R < 2:1 (stricter than scalp 1:1)
+- Earnings < 5 days away
+- ADV < 1M shares
+- D1 zone distal already breached (zone invalidated)
+- Setup type = RSI_DIVERGENCE with earnings < 10 days (extra caution)

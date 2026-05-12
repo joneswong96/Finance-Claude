@@ -39,3 +39,50 @@ After the day-trade-analyst completes, present output in this exact format:
 If no Grade A entries exist: output `暫無高確信進場機會 — 觀望`
 
 The `/watch` command remains available to activate the signal-tracker on any specific entry level for real-time confirmation monitoring.
+
+## Save to Dashboard
+
+After the day-trade-analyst completes and the output is formatted, save to the `analysis_history` SQLite table using the `sqlite` MCP tool. Extract the first Grade A entry's key fields (or nulls if no Grade A):
+
+```sql
+INSERT OR REPLACE INTO analysis_history
+  (run_id, command, ticker, direction, status, grade, entry_price, sl_price, tp1_price, rr_ratio, summary_md, raw_json, created_at, updated_at)
+VALUES (
+  'scan_{SYMBOL}_{YYYYMMDD_HHMMSS}',
+  'scan',
+  '{SYMBOL}',
+  '{LONG or SHORT from first Grade A entry, or null}',
+  'ACTIVE',
+  '{A or B from first entry, or null}',
+  {first_entry_price or null},
+  {first_sl_price or null},
+  {first_tp1_price or null},
+  {rr_ratio or null},
+  '{full formatted output above as markdown string}',
+  '{json string with key fields: symbol, bias, entries array}',
+  datetime('now'),
+  datetime('now')
+);
+```
+
+If the `analysis_history` table does not exist, create it first:
+```sql
+CREATE TABLE IF NOT EXISTS analysis_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT UNIQUE NOT NULL,
+    command TEXT NOT NULL,
+    ticker TEXT,
+    direction TEXT,
+    status TEXT DEFAULT 'ACTIVE',
+    grade TEXT,
+    entry_price REAL,
+    sl_price REAL,
+    tp1_price REAL,
+    rr_ratio REAL,
+    summary_md TEXT NOT NULL,
+    raw_json TEXT,
+    notes TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+```
