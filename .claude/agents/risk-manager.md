@@ -31,10 +31,12 @@ When reviewing a proposed trade:
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | Portfolio risk metrics, ratio analysis, stress input calculations |
-| 2 | `sqlite` | Historical VaR, past limit breaches, position and loss history |
+| 1 | `financial-analysis` | `calculate_financial_ratios()` for leverage/liquidity stress inputs |
+| 2 | `sqlite` | Historical VaR, past limit breaches, daily P&L, signal hit-rates |
 | 3 | `fetch` | FRED macro data for stress scenarios, regulatory text |
 | — | Others | Not in stack |
+
+See `.claude/mcp/financial-analysis.md` for tool details.
 
 ---
 
@@ -98,3 +100,106 @@ Write your complete risk assessment to `{workspace_path}/05_risk.md`:
 ```
 
 Finish with: "Risk assessment written to {workspace_path}/05_risk.md"
+
+---
+
+## TECHNICAL/SCALP Mission Mode
+
+When invoked for a scalp trade (from a signal-tracker ENTRY_SIGNAL or day-trade-analyst Grade A entry), use this streamlined format instead of the full fundamental risk template.
+
+**Read:**
+- ENTRY_SIGNAL or day-trade-analyst output: symbol, direction, entry, SL, TP1, TP2
+
+**Calculate:**
+
+| Check | Rule |
+|-------|------|
+| Points at risk | `abs(entry - SL)` |
+| R:R | `abs(TP1 - entry) / abs(entry - SL)` — must be ≥1:1 to proceed |
+| Max lots | `floor(max_risk_per_trade / pts_at_risk / tick_value)` |
+| Daily loss gate | Today's realized loss + (pts_at_risk × lot_size) must be < daily limit |
+
+**Default limits (override from portfolio context if available):**
+- Max risk per trade: 1% of account
+- Daily loss limit: 2% of account
+- Tick value for XAUUSD: $1 per 0.1pt per lot (standard), $10 per 1pt per standard lot
+
+**Output — SCALP_RISK_ASSESSMENT:**
+
+```
+SCALP_RISK_ASSESSMENT
+  symbol:       {SYMBOL}
+  direction:    {LONG / SHORT}
+  entry:        {PRICE}
+  sl:           {PRICE}  ({N.N} pts)
+  tp1:          {PRICE}  (+{N} pts)
+  tp2:          {PRICE}  (+{N} pts)
+  r_r:          1:{X.X}
+  pts_at_risk:  {N}
+  max_lots:     {N}  (1% risk rule)
+  daily_gate:   {CLEAR / NEAR_LIMIT / BLOCKED}
+  verdict:      GO | NO-GO
+  reason:       {if NO-GO: specific reason — R:R below threshold / daily limit / zone invalidated}
+```
+
+Finish with: "SCALP_RISK_ASSESSMENT complete. Pass to portfolio-manager."
+
+**NO-GO triggers (immediate rejection):**
+- R:R < 1:1
+- Daily loss limit already hit or would be exceeded
+- Zone distal already breached before entry
+- SL < 2pts (too tight — spread risk)
+
+---
+
+## SWING Mission Mode
+
+When invoked for a swing trade (from chart-analyst `SWING_ZONE_SIGNAL` + data-engineer `SWING_CATALYST`):
+
+**Read:**
+- `SWING_ZONE_SIGNAL`: symbol, direction, setup_type, h1_entry, structural_sl, d1_proximal, d1_distal
+- `SWING_CATALYST`: earnings_date, days_to_earnings, sector_trend
+
+**Calculate:**
+
+| Check | Rule |
+|-------|------|
+| R:R | `abs(tp1 - entry) / abs(entry - sl)` — must be ≥ 2:1 |
+| SL distance % | `abs(entry - sl) / entry × 100` — expect 3–5% |
+| Earnings gate | days_to_earnings < 5 → NO-GO; 5–14 → half-size only |
+| Liquidity | ADV must be ≥ 1M shares (from SWING_CATALYST) |
+| Max position size | 2–5% of portfolio (swing, not scalp) |
+
+**TP1 calculation:**
+- TP1 = next D1 resistance above entry (from SWING_ZONE_SIGNAL notes or swing-setups.md logic)
+- Verify R:R ≥ 2:1 using `abs(TP1 - entry) / abs(entry - SL)`
+- If R:R < 2:1 at TP1 → NO-GO (zone too close, setup doesn't qualify)
+
+**Output — SWING_RISK_ASSESSMENT:**
+
+```
+SWING_RISK_ASSESSMENT
+  symbol:           {TICKER}
+  direction:        {LONG / SHORT}
+  setup_type:       {TREND_PULLBACK / BREAKOUT / RSI_DIVERGENCE}
+  entry:            {PRICE}
+  sl:               {PRICE}  ({PCT}% from entry — structural)
+  tp1:              {PRICE}  (+{PCT}% from entry)
+  tp2:              {PRICE}  (+{PCT}% from entry — extension)
+  r_r:              1:{X.X}
+  sl_pct:           {N.N}%   (distance from entry to SL)
+  earnings_gate:    CLEAR ({N} days) | HALF-SIZE ({N} days) | NO-GO ({N} days)
+  adv_gate:         CLEAR ({N}M avg shares) | FAIL ({N}M — below 1M threshold)
+  max_position_pct: {N}%  (swing limit)
+  verdict:          GO | GO-HALF | NO-GO
+  reason:           {if NO-GO or GO-HALF: specific reason}
+```
+
+Finish with: "SWING_RISK_ASSESSMENT complete. Pass to portfolio-manager."
+
+**NO-GO triggers (swing — immediate rejection):**
+- R:R < 2:1 (stricter than scalp 1:1)
+- Earnings < 5 days away
+- ADV < 1M shares
+- D1 zone distal already breached (zone invalidated)
+- Setup type = RSI_DIVERGENCE with earnings < 10 days (extra caution)

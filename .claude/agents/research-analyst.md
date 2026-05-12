@@ -16,11 +16,13 @@ Use the best source for the job. Stop when you have enough.
 | Priority | Server | Use for |
 |----------|--------|---------|
 | 1 | `fetch` | SEC EDGAR filings, FRED macro data, direct IR/company pages — primary sources |
-| 2 | `financial-analysis` | Live stock snapshot, ratio benchmarks, quick DCF cross-check |
+| 2 | `financial-analysis` | `analyze_stock(ticker)` for live snapshot; `calculate_dcf()` for valuation cross-check |
 | 3 | `playwright` | Full research reports, competitor filings, JS-heavy pages |
 | 4 | `sqlite` | Prior analysis on same company, sector comps already cached |
 | 5 | `polymarket` | Crowd-implied probabilities on binary events (FDA, M&A, macro) |
 | — | Others | Not available — removed from stack |
+
+See `.claude/mcp/financial-analysis.md` for exact tool signatures. Never use `convert_currency` — static rates.
 
 **Best signal first.** If a primary source (SEC filing, earnings transcript) is available via `fetch`, use it over a synthesized summary. Original sources beat summaries.
 

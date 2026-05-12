@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+model: opus
 description: Use this agent FIRST for any complex, multi-step finance task that requires coordinating multiple specialists. It breaks down the request, delegates to the right agents in the correct order, and synthesizes a final output. Examples: "full investment analysis on TSLA", "build a risk-adjusted portfolio from scratch", "prepare a quarterly investor report".
 ---
 
@@ -27,7 +28,9 @@ Before doing anything else, classify the request and output a Mission Plan. This
 
 | Type | Triggers | Active Agents |
 |------|----------|---------------|
-| `TECHNICAL` | /scan, /watch, "chart", "zone", "entry signal", "where to buy" | chart-analyst, signal-tracker, risk-manager, portfolio-manager |
+| `TECHNICAL` | /scan, /watch, "chart", "zone", "entry signal", "where to buy", "day trade", "scalp" | day-trade-analyst, signal-tracker, risk-manager, portfolio-manager |
+| `SWING` | /swing, "swing trade", "swing setup", "stock swing" | chart-analyst (SWING MODE), data-engineer (catalyst), risk-manager (SWING), portfolio-manager (SWING) |
+| `SCREEN` | /screen, "what should I trade", "lead stocks", "stock screen", "find swing candidates" | data-engineer, research-analyst (Shallow Scan) |
 | `FUNDAMENTAL` | /analyze, "analysis", "invest in", "thesis on", "should I buy/sell" | data-engineer, research-analyst, quant-analyst, risk-manager, portfolio-manager, report-writer |
 | `COMBINED` | "confirm with chart", "conviction trade", "fundamental + technical" | data-engineer, research-analyst, quant-analyst, chart-analyst, signal-tracker, risk-manager, portfolio-manager, report-writer |
 | `RISK_CHECK` | /risk-check, "pre-trade check", "is this position safe" | risk-manager |
@@ -173,11 +176,83 @@ Agent(subagent_type="report-writer")     → 07_memo.md (print full content)
 ### TECHNICAL
 
 ```
-Agent(subagent_type="chart-analyst")  → 03c_zones.md
-Agent(subagent_type="signal-tracker") → ENTRY_SIGNAL or WATCHING
-Agent(subagent_type="risk-manager")   → SL/size approval
+Agent(subagent_type="day-trade-analyst") → D1→H4→H1→M15→M5 scan, draws all levels on TradingView
+  [if /watch: Agent(subagent_type="signal-tracker") → ENTRY_SIGNAL or WATCHING]
+Agent(subagent_type="risk-manager")      → SCALP_RISK_ASSESSMENT (SL/size approval)
 Agent(subagent_type="portfolio-manager") → execution decision
 ```
+
+For COMBINED missions needing swing macro context (H4+ zones), also spawn `chart-analyst` alongside `day-trade-analyst`.
+
+### SWING
+
+Stock swing trade analysis for a single ticker. No signal-tracker (user sets platform alerts manually).
+
+**Step 1 — Parallel data + chart (background):**
+```
+Agent(subagent_type="chart-analyst", run_in_background=True,
+  prompt="mission=SWING. Symbol: {TICKER}. Read .claude/skills/swing-setups.md.
+  Run SWING MODE protocol (W1→D1→H4→H1 only — NO M15/M5).
+  Output SWING_ZONE_SIGNAL block.")
+
+Agent(subagent_type="data-engineer", run_in_background=True,
+  prompt="Catalyst-only task for swing trade on {TICKER}. ≤2 turns.
+  Fetch: (1) next earnings date and days until earnings, (2) sector ETF 20-day trend vs SPY.
+  Output as SWING_CATALYST block.")
+```
+
+**Step 2 — Risk (foreground, after both step 1 agents complete):**
+```
+Agent(subagent_type="risk-manager",
+  prompt="mission=SWING. Read SWING_ZONE_SIGNAL and SWING_CATALYST from prior messages.
+  Apply SWING Mission Mode: check R:R ≥2:1, earnings gate, ADV gate.
+  Output SWING_RISK_ASSESSMENT block.")
+```
+
+**Step 3 — Execution (foreground):**
+```
+Agent(subagent_type="portfolio-manager",
+  prompt="mission=SWING. Read SWING_RISK_ASSESSMENT. Apply SWING Execution Protocol.
+  Determine batch split by setup_type. Output SWING_EXECUTION_DECISION block.")
+```
+
+**Step 4 — Assemble and save:**
+Collect SWING_ZONE_SIGNAL + SWING_CATALYST + SWING_RISK_ASSESSMENT + SWING_EXECUTION_DECISION.
+Format final output for the user (see `/swing` command format).
+Save to `analysis_history` SQLite table (see `/swing` command for schema).
+
+**Sleeping for SWING:** signal-tracker, research-analyst, quant-analyst, report-writer, compliance-officer, dca-manager.
+
+### SCREEN
+
+Weekly lead stock hunt. Returns top 5 ranked swing candidates from lead sectors.
+
+**Step 1 — Systematic screening (foreground):**
+```
+Agent(subagent_type="data-engineer",
+  prompt="Lead stock screening task. Use financial-analysis analyze_stock() and fetch.
+  Screen universe: NYSE/NASDAQ, market cap >$5B, ADV >1M shares, price >$20.
+  For each candidate: compute RS score (vs SPY 20D/60D/252D), EPS growth YoY, revenue growth YoY.
+  Composite score: (RS × 0.4) + (EPS_rank × 0.3) + (base_quality × 0.2) + (sector_rank × 0.1).
+  Also rank the 11 GICS sectors by 4-week relative performance vs SPY.
+  Output top 10 candidates with scores + top 3 sectors. Write to workspace/{SCREEN_DATE}/01_screen_data.md")
+```
+
+**Step 2 — Fundamental verification on top 3 (background, parallel):**
+```
+Agent(subagent_type="research-analyst",
+  prompt="DEPTH=SHALLOW_SCAN only (≤3 turns). Read workspace/{DATE}/01_screen_data.md.
+  For the top 3 candidates: verify EPS/revenue growth quality, check next earnings date,
+  flag any binary events or red flags. Confirm or downgrade each candidate's ranking.
+  Output as SCREEN_BRIEF to workspace/{DATE}/02_screen_brief.md")
+```
+
+**Step 3 — Assemble and save:**
+Merge data-engineer scores + research-analyst verification. Rank final top 5.
+Format screen output for user (see `/screen` command format).
+Save to `analysis_history` SQLite table.
+
+**Sleeping for SCREEN:** chart-analyst, signal-tracker, quant-analyst, risk-manager, portfolio-manager, report-writer, compliance-officer, dca-manager.
 
 ### RISK_CHECK / COMPLIANCE / DATA_ONLY
 
@@ -206,7 +281,7 @@ Agents are pre-assigned to cost-appropriate models via their frontmatter. Do not
 | Model | Agents | Why |
 |-------|--------|-----|
 | **Opus** | orchestrator, research-analyst, portfolio-manager | Judgment, thesis, decisions |
-| **Sonnet** | data-engineer, quant-analyst, chart-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, templates |
+| **Sonnet** | data-engineer, quant-analyst, chart-analyst, day-trade-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, templates |
 
 **Budget discipline:**
 - Always spawn parallel agents in a single message (one Agent call per agent, same turn).

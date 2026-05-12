@@ -179,7 +179,7 @@ Use this exact structure. Every section is mandatory.
 - `CATALYST_MISS` — recent earnings/trial miss
 
 **Trade Plan Rules (BUY):**
-- Assume $500,000 portfolio base unless specified otherwise
+- Assume $10M AUM unless specified otherwise (position size from portfolio-manager's % recommendation)
 - Position size from portfolio-manager's % recommendation
 - Batch 1: at market, 50% of position
 - Batch 2: at -5% from current price, 30% of position

@@ -1,6 +1,16 @@
-# Finance-Claude: 10-Person Sub-Agent Team
+# Finance-Claude: 3-Track Trading System
 
-A Claude Code project combining a professional finance team with live TradingView technical analysis. Ten specialized agents collaborate under a master orchestrator, connected to TradingView Desktop via MCP.
+A Claude Code project combining a professional finance team with live TradingView technical analysis. Eleven specialized agents collaborate under a master orchestrator, supporting three trading tracks: intraday day trade, stock swing trade, and ETF 定投/DCA.
+
+**System role:** Analyst and advisor. The system produces analysis, entry prices, and alert levels. The user executes manually on their own platforms (IC Markets, IBKR, Futu).
+
+## Three Tracks
+
+| Track | Type | Instruments | Hold | Platform | Commands |
+|-------|------|-------------|------|----------|----------|
+| **1** | Day Trade | XAUUSD, NQ, ES, HK50 | Intraday | IC Markets | `/scan`, `/watch` |
+| **2** | Stock Swing | Lead stocks (AAPL, NVDA, JPM…) | 2 days–4 weeks | IBKR / Futu | `/screen`, `/swing` |
+| **3** | ETF 定投 (DCA) | CSPX, VWRA, 2800.HK | Months–years | IBKR + Futu | `/dca` |
 
 ## The Team
 
@@ -11,7 +21,7 @@ Agents are split into two tiers. **Tool agents** gather information and output s
 | Model | Agents | Rationale |
 |-------|--------|-----------|
 | **Opus** | orchestrator, research-analyst, portfolio-manager | Judgment, expert thesis, investment decisions |
-| **Sonnet** | data-engineer, quant-analyst, chart-analyst, signal-tracker, risk-manager, report-writer, compliance-officer | Data gathering, calculations, structured templates |
+| **Sonnet** | data-engineer, quant-analyst, chart-analyst, day-trade-analyst, signal-tracker, risk-manager, report-writer, compliance-officer, dca-manager | Data gathering, calculations, structured templates |
 
 ### Meta
 | Agent | Model | Role |
@@ -24,7 +34,9 @@ Agents are split into two tiers. **Tool agents** gather information and output s
 | `data-engineer` | Sonnet | Data Package: cleaned, validated datasets |
 | `research-analyst` | Opus | Research Brief: qualitative thesis, fundamentals, why-triggers |
 | `quant-analyst` | Sonnet | Quant Brief: signals, backtest results, statistical anomalies |
-| `chart-analyst` | Sonnet | Zone Brief: macro zones (方向偏向) + immediate SNR ladder (7.5pt scalp entries) via TradingView |
+| `chart-analyst` | Sonnet | Zone Brief: macro zones (方向偏向) + SNR ladder (scalp) OR SWING_ZONE_SIGNAL (swing, W1→D1→H4→H1) |
+| `day-trade-analyst` | Sonnet | Day-Trade Brief: Grade A/B intraday entries (LONG + SHORT) with entry/SL/TP drawn on TradingView — activates via `/scan` |
+| `dca-manager` | Sonnet | DCA Brief: this month's buy amounts, volatility multipliers, alert price levels — activates via `/dca` |
 
 ### Actioner Agents — decision makers
 | Agent | Model | Role |
@@ -49,6 +61,7 @@ Each agent has a turn limit and output token budget enforced in its definition:
 | research-analyst | 6 (shallow: 3) | 1,000 tokens | ~$2.18 |
 | quant-analyst | 5 | 800 tokens | ~$0.33 |
 | chart-analyst | 6 (deep: 8) | 1,000 tokens | ~$0.30 |
+| day-trade-analyst | 8 | 1,200 tokens | ~$0.40 |
 | signal-tracker | 4 | 600 tokens | ~$0.15 |
 | risk-manager | 4 | 800 tokens | ~$0.23 |
 | portfolio-manager | 3 | 800 tokens | ~$0.98 |
@@ -56,7 +69,11 @@ Each agent has a turn limit and output token budget enforced in its definition:
 | compliance-officer | 3 | 600 tokens | ~$0.15 |
 
 **Estimated pipeline costs:**
-- `/scan` (technical): ~$0.65
+- `/scan` (day-trade): ~$0.40
+- `/watch` (signal + risk + portfolio): ~$1.36
+- `/screen` (lead stocks): ~$1.80
+- `/swing` (stock swing setup): ~$1.10
+- `/dca` (DCA brief): ~$0.20
 - `/analyze` (fundamental, no rebuttal): ~$5.00
 - `/analyze` (fundamental, with rebuttal): ~$6.70
 - `/analyze` (combined): ~$7.00
@@ -69,19 +86,47 @@ TradingView Desktop must be running with CDP enabled before starting a chart ana
 
 ## Slash Commands
 
-| Command | What It Does |
-|---------|--------------|
-| `/analyze TSLA` | Full fundamental investment analysis |
-| `/scan XAUUSD` | Scan TradingView for active supply/demand zones |
-| `/watch XAUUSD LONG 2048.5 2041.0` | Monitor a zone and fire entry signal when confirmed |
-| `/backtest <strategy>` | Quant backtest with full performance & risk metrics |
-| `/risk-check AAPL 1000 buy` | Pre-trade risk review |
-| `/quarterly-report Q1 2026` | Quarterly investor report (full team) |
-| `/compliance-review <doc>` | Compliance sign-off on a document |
+| Track | Command | What It Does |
+|-------|---------|--------------|
+| **1** | `/scan XAUUSD` | Scan TradingView for Grade A intraday entries |
+| **1** | `/watch XAUUSD LONG 2048.5 2041.0` | Monitor a zone and fire entry signal when confirmed |
+| **2** | `/screen` | Weekly lead stock hunt — top 5 swing candidates from leading sectors |
+| **2** | `/swing NVDA` | Full swing setup: entry/SL/TP/alert levels for a specific stock |
+| **3** | `/dca` | This month's DCA buy amounts + alert price levels |
+| **3** | `/dca check CSPX` | Spot check: current multiplier for one ETF |
+| **3** | `/dca setup` | First-time: configure your ETF roster and base amounts |
+| **3** | `/dca log CSPX 2.5 518.40` | Record a purchase for performance tracking |
+| **3** | `/dca report` | Performance review: CAGR, P&L, DCA vs lump-sum |
+| — | `/analyze TSLA` | Full fundamental investment analysis |
+| — | `/backtest <strategy>` | Quant backtest with full performance & risk metrics |
+| — | `/risk-check AAPL 1000 buy` | Pre-trade risk review |
+| — | `/quarterly-report Q1 2026` | Quarterly investor report (full team) |
+| — | `/compliance-review <doc>` | Compliance sign-off on a document |
 
 ## Standard Workflow Sequences
 
-**Full investment analysis (with conditional cross-debate):**
+**Day trade signal (Track 1):**
+```
+/scan → day-trade-analyst (D1→H4→H1→M15→M5) → draws on TradingView → saves to analysis_history
+/watch SYMBOL DIRECTION PROXIMAL DISTAL → signal-tracker → risk-manager → portfolio-manager
+```
+
+**Stock swing trade (Track 2):**
+```
+/screen → data-engineer (RS screen) → research-analyst (Shallow × 3) → ranked top 5 → saves to analysis_history
+/swing TICKER → orchestrator (SWING mission):
+  parallel: chart-analyst [SWING MODE W1→D1→H4→H1] + data-engineer [catalyst only]
+  → risk-manager [SWING: R:R≥2:1, earnings gate] → portfolio-manager [SWING: batch split]
+  → user output with 🔔 alert levels → saves to analysis_history
+```
+
+**ETF DCA (Track 3):**
+```
+/dca → dca-manager → fetches live prices + 200D MA → applies volatility multiplier
+     → outputs buy amounts + alert levels → saves to analysis_history
+```
+
+**Full investment analysis (fundamental, with conditional cross-debate):**
 ```
 orchestrator spawns:
   1. data-engineer                           → writes workspace/{ID}/01_data.md
@@ -95,17 +140,6 @@ orchestrator spawns:
   7. report-writer                           → writes 07_memo.md
 ```
 
-**Technical trade signal:**
-```
-/scan → chart-analyst (multi-TF: H4→H1→M15) → signal-tracker → risk-manager → portfolio-manager
-```
-
-**Combined conviction trade (fundamental + technical):**
-```
-[GATE] → data-engineer → [research-analyst + quant-analyst + chart-analyst] (parallel)
-       → signal-tracker → risk-manager → portfolio-manager → report-writer
-```
-
 **Quarterly investor report:**
 ```
 orchestrator → data-engineer → [portfolio-manager + risk-manager] → report-writer → compliance-officer
@@ -115,9 +149,34 @@ orchestrator → data-engineer → [portfolio-manager + risk-manager] → report
 
 Every multi-agent analysis writes to `workspace/{TICKER}_{YYYYMMDD}/`. Agents communicate through files — not through the orchestrator. Workspace files are gitignored (ephemeral analysis output).
 
-## Zone Analysis Framework
+## Technical Frameworks (Skills)
 
-`chart-analyst` and `signal-tracker` use `skills/zone-analysis.md` as their shared framework. Zones scored 0–100; Grade A (75+) primary watch, Grade B (50–74) secondary, below 50 discarded.
+| File | Used By | What It Covers |
+|------|---------|----------------|
+| `.claude/skills/zone-analysis.md` | chart-analyst, signal-tracker | Zone scoring, grade boundaries, confluence rules (scalp) |
+| `.claude/skills/day-trade-setups.md` | day-trade-analyst, signal-tracker | 5 intraday setup types with entry/SL/TP rules |
+| `.claude/skills/swing-setups.md` | chart-analyst (SWING MODE), risk-manager, portfolio-manager | 3 swing setup types, structural SL %, R:R ≥2:1 rules |
+| `.claude/skills/indicator-readings.md` | All technical agents | Standardised RSI/MACD/EMA/BB/Stochastic interpretation |
+
+Zones scored 0–100; Grade A (75+) primary, Grade B (50–74) secondary, below 50 discarded.
+
+## HTML Dashboard
+
+Local web dashboard — archives every `/scan`, `/swing`, `/screen`, `/dca` analysis run.
+
+```bash
+# One-time setup
+pip install fastapi uvicorn
+
+# Start (from Finance-Claude root)
+uvicorn dashboard.server:app --host 0.0.0.0 --port 8080 --reload
+
+# Access
+# PC:           http://localhost:8080
+# Phone/tablet: http://<your-pc-ip>:8080
+```
+
+Features: analysis cards with status tracking (ACTIVE / TAKEN / EXPIRED), personal notes, full detail view, filter by command type or symbol. SQLite `analysis_history` table — agents write to it automatically at the end of each command run.
 
 ## MCP Servers
 
@@ -145,6 +204,8 @@ Every multi-agent analysis writes to `workspace/{TICKER}_{YYYYMMDD}/`. Agents co
 3. Copy `CLAUDE.local.md.example` → `CLAUDE.local.md` and fill in personal overrides
 4. Put API keys in `.env` (gitignored)
 5. Start Claude Code — MCP connects automatically
+6. First DCA use: run `/dca setup` to configure your ETF roster
+7. Start dashboard: `uvicorn dashboard.server:app --host 0.0.0.0 --port 8080 --reload`
 
 ## Project Structure
 
@@ -154,22 +215,30 @@ Finance-Claude/
 ├── CLAUDE.local.md.example
 ├── .gitignore
 ├── .mcp.json                      # 6 MCP server configs
+├── dashboard/
+│   ├── server.py                  # FastAPI server (uvicorn dashboard.server:app)
+│   └── index.html                 # Single-page dashboard UI
 └── .claude/
     ├── settings.json
     ├── agents/
-    │   ├── orchestrator.md
-    │   ├── chart-analyst.md
+    │   ├── orchestrator.md        # Master brain — SWING + SCREEN mission types added
+    │   ├── chart-analyst.md       # Scalp zones (Standard) + SWING MODE (W1→D1→H4→H1)
+    │   ├── day-trade-analyst.md
     │   ├── signal-tracker.md
     │   ├── research-analyst.md
     │   ├── quant-analyst.md
-    │   ├── portfolio-manager.md
-    │   ├── risk-manager.md
+    │   ├── portfolio-manager.md   # Scalp execution + SWING execution protocol
+    │   ├── risk-manager.md        # SCALP mode + SWING mode
     │   ├── compliance-officer.md
     │   ├── data-engineer.md
-    │   └── report-writer.md
+    │   ├── report-writer.md
+    │   └── dca-manager.md         # NEW — ETF DCA advisor
     ├── commands/
-    │   ├── scan.md
+    │   ├── scan.md                # + analysis_history save step
     │   ├── watch.md
+    │   ├── screen.md              # NEW — weekly lead stock hunt
+    │   ├── swing.md               # NEW — stock swing setup
+    │   ├── dca.md                 # NEW — ETF DCA advisory
     │   ├── analyze.md
     │   ├── backtest.md
     │   ├── risk-check.md
@@ -177,7 +246,10 @@ Finance-Claude/
     │   └── compliance-review.md
     ├── mcp/                       # MCP server docs
     ├── skills/
-    │   └── zone-analysis.md
+    │   ├── zone-analysis.md
+    │   ├── day-trade-setups.md
+    │   ├── swing-setups.md        # NEW — 3 swing setup types, structural SL rules
+    │   └── indicator-readings.md
     ├── output-styles/
     │   └── memo.md
     └── hooks/

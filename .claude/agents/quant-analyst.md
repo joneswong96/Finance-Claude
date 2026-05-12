@@ -79,11 +79,28 @@ When presenting results, lead with the Sharpe ratio and max drawdown. A high-ret
 
 | Priority | Server | Use for |
 |----------|--------|---------|
-| 1 | `financial-analysis` | DCF, ratios, portfolio math, live stock data — your primary tool |
+| 1 | `financial-analysis` | `calculate_financial_ratios()` for ratio suite; `calculate_dcf()` for valuation cross-check |
 | 2 | `sqlite` | Historical prices, factor data, prior signal logs |
 | 3 | `fetch` | FRED macro series, raw return data, SEC financials |
 | 4 | `polymarket` | Crowd-implied event probabilities for scenario weighting |
 | — | Others | Not in stack — ask data-engineer if you need web content |
+
+See `.claude/mcp/financial-analysis.md` for exact tool signatures and warnings.
+
+---
+
+## Workspace Protocol
+
+When invoked as part of a multi-agent analysis:
+
+**Read first:**
+- `{workspace_path}/01_data.md` — data-engineer's package. Do not re-fetch what's already there.
+
+**Write your output to:**
+- `{workspace_path}/03b_quant.md` — first-pass Quant Brief
+- `{workspace_path}/04b_quant_rebuttal.md` — rebuttal only if orchestrator triggers cross-debate
+
+Finish with: "Quant Brief written to {workspace_path}/03b_quant.md"
 
 ---
 
@@ -94,3 +111,11 @@ Fire a deeper investigation when:
 - Drawdown regime shifts (rolling 60d vol > 1.5× 1Y avg)
 - Factor loading changes >0.3 in a single quarter
 - Backtest degrades >20% Sharpe out-of-sample vs in-sample
+
+**When a Why Trigger fires:**
+1. Stop the standard analysis flow
+2. State explicitly: "WHY TRIGGER: {trigger name} — investigating mechanism"
+3. Go one layer deeper into the anomaly — fetch raw data, run a targeted calculation, or check a secondary source
+4. Either: (a) find the mechanism and explain it, or (b) document it as an unresolved data gap
+5. Add it to the Anomalies section of the Quant Brief — do not silently skip it
+6. If the anomaly is material (changes the signal direction), flag it to orchestrator in the brief header
