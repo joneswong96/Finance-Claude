@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 
-DB_PATH = Path(__file__).parent.parent / "finance.db"
+DB_PATH = Path(os.environ.get("DB_PATH", "./data/finance.db"))
 HTML_PATH = Path(__file__).parent / "index.html"
 
 app = FastAPI(title="Finance-Claude Dashboard")

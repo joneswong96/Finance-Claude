@@ -340,6 +340,10 @@ def convert_currency(
 ) -> dict[str, Any]:
     """Convert an amount between currencies using static reference rates.
 
+    ⚠️ STATIC RATES — hardcoded as of late 2024. Do NOT use for trading,
+    FX analysis, or any context where accuracy matters. For live rates use
+    TradingView MCP (``quote_get``) or a real-time FX API via ``fetch``.
+
     Supported currencies: USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, INR, MXN,
     SGD, HKD, NZD, SEK, NOK, DKK, ZAR, BRL, KRW.
 
